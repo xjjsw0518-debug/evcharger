@@ -48,6 +48,8 @@ interface BlogFormState {
   publishDate: string;
   status: BlogStatus;
   scheduledDateTime: string; // datetime-local格式
+  videoUrl: string;
+  videoType: 'youtube' | 'vimeo' | 'file' | '';
 }
 
 const emptyBlogForm: BlogFormState = {
@@ -63,6 +65,8 @@ const emptyBlogForm: BlogFormState = {
   publishDate: new Date().toISOString().split('T')[0],
   status: 'published',
   scheduledDateTime: '',
+  videoUrl: '',
+  videoType: '',
 };
 
 function blogToForm(b: IBlogPost): BlogFormState {
@@ -86,6 +90,8 @@ function blogToForm(b: IBlogPost): BlogFormState {
     publishDate: b.publishDate,
     status,
     scheduledDateTime,
+    videoUrl: b.videoUrl || '',
+    videoType: b.videoType || '',
   };
 }
 
@@ -100,6 +106,10 @@ function formToBlogInput(f: BlogFormState): Omit<IBlogPost, 'id' | 'createdAt' |
     publishDate: f.publishDate,
     status: f.status,
   };
+  if (f.videoUrl.trim()) {
+    result.videoUrl = f.videoUrl.trim();
+    result.videoType = f.videoType || undefined;
+  }
   if (f.status === 'scheduled' && f.scheduledDateTime) {
     result.scheduledAt = new Date(f.scheduledDateTime).getTime();
   }
@@ -554,6 +564,38 @@ export default function BlogAdminSection() {
                 onChange={e => setForm(f => ({ ...f, coverImage: e.target.value }))}
               />
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1.5 md:col-span-2">
+                <Label>{lang === 'zh' ? '视频 URL（可选，支持 YouTube/Vimeo/视频文件）' : 'Video URL (optional, YouTube/Vimeo/file)'}</Label>
+                <Input
+                  value={form.videoUrl}
+                  onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
+                  placeholder={lang === 'zh' ? 'https://www.youtube.com/watch?v=...' : 'https://www.youtube.com/watch?v=...'}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{lang === 'zh' ? '视频类型' : 'Video Type'}</Label>
+                <Select
+                  value={form.videoType}
+                  onValueChange={v => setForm(f => ({ ...f, videoType: v as BlogFormState['videoType'] }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={lang === 'zh' ? '自动检测' : 'Auto detect'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">{lang === 'zh' ? '自动检测' : 'Auto detect'}</SelectItem>
+                    <SelectItem value="youtube">YouTube</SelectItem>
+                    <SelectItem value="vimeo">Vimeo</SelectItem>
+                    <SelectItem value="file">{lang === 'zh' ? '视频文件' : 'Video File'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {form.videoUrl && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-black border border-border">
+                <VideoPreview url={form.videoUrl} type={form.videoType} />
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>{lang === 'zh' ? '中文摘要' : 'Summary (Chinese)'}</Label>
@@ -698,4 +740,75 @@ export default function BlogAdminSection() {
       </AlertDialog>
     </div>
   );
+}
+
+// 视频预览组件（后台编辑用）
+function VideoPreview({ url, type }: { url: string; type?: string }) {
+  const detectedType = type || detectVideoType(url);
+
+  if (detectedType === 'youtube') {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) return <VideoPreviewFallback url={url} />;
+    return (
+      <iframe
+        src={`https://www.youtube.com/embed/${videoId}`}
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  if (detectedType === 'vimeo') {
+    const videoId = extractVimeoId(url);
+    if (!videoId) return <VideoPreviewFallback url={url} />;
+    return (
+      <iframe
+        src={`https://player.vimeo.com/video/${videoId}`}
+        className="w-full h-full"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  return (
+    <video src={url} controls className="w-full h-full object-contain">
+      您的浏览器不支持视频播放。
+    </video>
+  );
+}
+
+function VideoPreviewFallback({ url }: { url: string }) {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-4 text-center">
+      <p className="text-xs text-muted-foreground">无法自动解析视频链接，请保存后在前台查看</p>
+      <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline break-all">
+        {url}
+      </a>
+    </div>
+  );
+}
+
+function detectVideoType(url: string): 'youtube' | 'vimeo' | 'file' {
+  if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
+  if (/vimeo\.com/.test(url)) return 'vimeo';
+  return 'file';
+}
+
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+function extractVimeoId(url: string): string | null {
+  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return match ? match[1] : null;
 }

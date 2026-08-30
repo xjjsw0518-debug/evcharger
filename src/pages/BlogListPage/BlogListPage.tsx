@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Calendar, User, Tag, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Search, Calendar, User, Tag, ChevronRight, ChevronLeft, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -174,12 +174,24 @@ function BlogCard({ post, catName, lang, onClick }: { post: IBlogPost; catName: 
       className="overflow-hidden cursor-pointer group hover:shadow-lg transition-all duration-300 border-border/40"
       onClick={onClick}
     >
-      <div className="aspect-[16/9] overflow-hidden bg-muted">
+      <div className="aspect-[16/9] overflow-hidden bg-muted relative">
         <Image
           src={post.coverImage}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
+        {/* 视频标识 */}
+        {post.videoUrl && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+            <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <Play className="size-6 text-primary fill-primary ml-0.5" />
+            </div>
+            <span className="absolute bottom-3 right-3 px-2 py-1 rounded-md bg-black/60 text-white text-xs font-medium flex items-center gap-1">
+              <Play className="size-3 fill-white" />
+              {lang === 'zh' ? '视频' : 'Video'}
+            </span>
+          </div>
+        )}
       </div>
       <CardContent className="p-5 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">

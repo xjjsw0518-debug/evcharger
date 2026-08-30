@@ -134,6 +134,13 @@ export default function BlogDetailPage() {
           <Image src={post.coverImage} alt={title} className="w-full h-full object-cover" />
         </div>
 
+        {/* 视频播放器 */}
+        {post.videoUrl && (
+          <div className="mb-10">
+            <VideoPlayer url={post.videoUrl} type={post.videoType} title={title} />
+          </div>
+        )}
+
         {/* 正文 */}
         <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert">
           <BlogContent content={content} />
@@ -268,6 +275,104 @@ function BlogContent({ content }: { content: string }) {
         }
         return <p key={i}>{block}</p>;
       })}
+    </div>
+  );
+}
+
+// 视频播放器组件：支持 YouTube、Vimeo 和直接视频文件
+function VideoPlayer({ url, type, title }: { url: string; type?: 'youtube' | 'vimeo' | 'file'; title: string }) {
+  // 自动检测视频类型
+  const detectedType = type || detectVideoType(url);
+
+  if (detectedType === 'youtube') {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) return <VideoFallback url={url} />;
+    return (
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-lg">
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+          title={title}
+          className="absolute inset-0 w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  if (detectedType === 'vimeo') {
+    const videoId = extractVimeoId(url);
+    if (!videoId) return <VideoFallback url={url} />;
+    return (
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-lg">
+        <iframe
+          src={`https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`}
+          title={title}
+          className="absolute inset-0 w-full h-full"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  // 直接视频文件
+  return (
+    <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-lg">
+      <video
+        src={url}
+        title={title}
+        controls
+        preload="metadata"
+        className="absolute inset-0 w-full h-full object-contain"
+      >
+        {`您的浏览器不支持视频播放。`}
+      </video>
+    </div>
+  );
+}
+
+// 检测视频类型
+function detectVideoType(url: string): 'youtube' | 'vimeo' | 'file' {
+  if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
+  if (/vimeo\.com/.test(url)) return 'vimeo';
+  return 'file';
+}
+
+// 从 YouTube URL 提取视频 ID
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// 从 Vimeo URL 提取视频 ID
+function extractVimeoId(url: string): string | null {
+  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return match ? match[1] : null;
+}
+
+// 视频加载失败时的降级显示
+function VideoFallback({ url }: { url: string }) {
+  return (
+    <div className="w-full aspect-video rounded-xl bg-muted flex flex-col items-center justify-center gap-3 p-6">
+      <p className="text-sm text-muted-foreground text-center">
+        视频无法自动解析，请点击下方链接观看：
+      </p>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-primary hover:underline break-all text-center"
+      >
+        {url}
+      </a>
     </div>
   );
 }
