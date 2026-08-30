@@ -34,8 +34,8 @@ type ImportMode = 'append' | 'overwrite';
 type ParsedRow = Partial<IProduct> & { _error?: string; _rowIndex?: number };
 
 const CSV_TEMPLATE = [
-  ['nameZh', 'nameEn', 'category', 'priceMin', 'priceMax', 'moq', 'mainImage', 'images', 'descZh', 'descEn', 'specsJson', 'skusJson'],
-  ['GBT 32A Charging Gun', 'GBT 32A Charging Gun', 'charging-guns', '18', '35', '2', 'https://example.com/main.jpg', 'https://example.com/1.jpg;https://example.com/2.jpg', '产品描述', 'Product description', '[{"label":{"zh":"材质","en":"Material"},"value":"Thermoplastic"}]', '[{"id":"s1","name":{"zh":"黑色","en":"Black"},"price":18,"stock":100}]'],
+  ['nameZh', 'nameEn', 'category', 'priceMin', 'priceMax', 'moq', 'mainImage', 'images', 'descZh', 'descEn', 'specsJson', 'skusJson', 'videoUrl', 'videoType', 'videoTitleZh', 'videoTitleEn', 'supplierUrl', 'supplierPrice'],
+  ['GBT 32A Charging Gun', 'GBT 32A Charging Gun', 'charging-guns', '18', '35', '2', 'https://example.com/main.jpg', 'https://example.com/1.jpg;https://example.com/2.jpg', '产品描述', 'Product description', '[{"label":{"zh":"材质","en":"Material"},"value":"Thermoplastic"}]', '[{"id":"s1","name":{"zh":"黑色","en":"Black"},"price":18,"stock":100}]', 'https://youtube.com/watch?v=demo', 'youtube', '产品演示', 'Product Demo', 'https://1688.com/item/demo.html', '12.50'],
 ];
 
 function arrayToCsv(rows: (string | number)[][]): string {
@@ -147,6 +147,20 @@ export default function CsvImportSection() {
       const descEn = row[colIndex('descEn')] || '';
       const specsStr = row[colIndex('specsJson')] || '[]';
       const skusStr = row[colIndex('skusJson')] || '';
+      // 产品视频字段
+      const videoUrl = row[colIndex('videoUrl')] || '';
+      const videoTypeStr = row[colIndex('videoType')] || 'youtube';
+      const videoTitleZh = row[colIndex('videoTitleZh')] || '';
+      const videoTitleEn = row[colIndex('videoTitleEn')] || '';
+      // 供应商信息字段（仅后台可见）
+      const supplierUrl = row[colIndex('supplierUrl')] || '';
+      const supplierPriceStr = row[colIndex('supplierPrice')] || '';
+
+      // 验证视频类型
+      const validVideoTypes = ['youtube', 'vimeo', 'direct'];
+      const videoType = validVideoTypes.includes(videoTypeStr)
+        ? videoTypeStr as 'youtube' | 'vimeo' | 'direct'
+        : 'youtube';
 
       // 验证
       const errors: string[] = [];
@@ -184,6 +198,15 @@ export default function CsvImportSection() {
         specs,
         skus,
         featured: false,
+        // 产品视频
+        videoUrl: videoUrl.trim() || undefined,
+        videoType: videoUrl.trim() ? videoType : undefined,
+        videoTitle: (videoTitleZh.trim() || videoTitleEn.trim())
+          ? { zh: videoTitleZh, en: videoTitleEn }
+          : undefined,
+        // 供应商信息（仅后台可见）
+        supplierUrl: supplierUrl.trim() || undefined,
+        supplierPrice: supplierPriceStr.trim() ? Number(supplierPriceStr) : undefined,
       };
 
       if (errors.length > 0) {

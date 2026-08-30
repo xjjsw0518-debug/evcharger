@@ -10,6 +10,7 @@ import {
   Warehouse,
   ShieldCheck,
   MessageCircle,
+  Play,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +39,7 @@ import ProductGallery from '@/components/ProductGallery';
 import InquiryDialog from '@/components/InquiryDialog';
 import Seo from '@/components/Seo';
 import ShareButtons from '@/components/ShareButtons';
+import VideoPlayer from '@/components/VideoPlayer';
 import { SITE_CONFIG } from '@/data/site';
 import { useContactSettings } from '@/hooks/useContactSettings';
 import { toast } from 'sonner';
@@ -422,6 +424,30 @@ export default function ProductDetailPage() {
               )}
             </article>
           </div>
+
+          {/* 产品视频 */}
+          {product.videoUrl && (
+            <div className="mb-12">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Play className="size-4 text-primary" />
+                </div>
+                <h2 className="text-lg md:text-xl font-bold text-foreground">
+                  {lang === 'zh' ? '产品视频展示' : 'Product Video'}
+                </h2>
+              </div>
+              <VideoPlayer
+                url={product.videoUrl}
+                type={product.videoType}
+                title={product.videoTitle?.[lang as 'zh' | 'en'] || productName}
+              />
+              {product.videoTitle && (
+                <p className="text-sm text-muted-foreground mt-3">
+                  {product.videoTitle[lang as 'zh' | 'en']}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* 详情分区 + 完整规格 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">

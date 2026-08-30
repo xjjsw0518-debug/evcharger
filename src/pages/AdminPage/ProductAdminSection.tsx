@@ -45,6 +45,14 @@ type FormState = {
   descEn: string;
   specs: string;
   featured: boolean;
+  // 产品视频
+  videoUrl: string;
+  videoType: 'youtube' | 'vimeo' | 'direct';
+  videoTitleZh: string;
+  videoTitleEn: string;
+  // 供应商信息（仅后台可见）
+  supplierUrl: string;
+  supplierPrice: string;
 };
 
 const emptyForm: FormState = {
@@ -60,6 +68,12 @@ const emptyForm: FormState = {
   descEn: '',
   specs: '[]',
   featured: false,
+  videoUrl: '',
+  videoType: 'youtube',
+  videoTitleZh: '',
+  videoTitleEn: '',
+  supplierUrl: '',
+  supplierPrice: '',
 };
 
 function productToForm(p: IProduct): FormState {
@@ -76,6 +90,12 @@ function productToForm(p: IProduct): FormState {
     descEn: p.description.en,
     specs: JSON.stringify(p.specs, null, 2),
     featured: !!p.featured,
+    videoUrl: p.videoUrl || '',
+    videoType: p.videoType || 'youtube',
+    videoTitleZh: p.videoTitle?.zh || '',
+    videoTitleEn: p.videoTitle?.en || '',
+    supplierUrl: p.supplierUrl || '',
+    supplierPrice: p.supplierPrice != null ? String(p.supplierPrice) : '',
   };
 }
 
@@ -101,6 +121,15 @@ function formToProductInput(f: FormState): Omit<IProduct, 'id' | 'source' | 'cre
     description: { zh: f.descZh, en: f.descEn },
     specs,
     featured: f.featured,
+    // 产品视频
+    videoUrl: f.videoUrl.trim() || undefined,
+    videoType: f.videoUrl.trim() ? f.videoType : undefined,
+    videoTitle: (f.videoTitleZh.trim() || f.videoTitleEn.trim())
+      ? { zh: f.videoTitleZh, en: f.videoTitleEn }
+      : undefined,
+    // 供应商信息（仅后台可见）
+    supplierUrl: f.supplierUrl.trim() || undefined,
+    supplierPrice: f.supplierPrice.trim() ? Number(f.supplierPrice) : undefined,
   };
 }
 
@@ -377,6 +406,79 @@ export default function ProductAdminSection() {
                 JSON 数组格式，例如: {`[{{"label": {"zh": "材质", "en": "Material"}, "value": "ABS"}}]`}
               </p>
             </div>
+
+            {/* 产品视频 */}
+            <div className="md:col-span-2 pt-2 border-t border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-3">
+                {lang === 'zh' ? '📹 产品视频（前台显示）' : '📹 Product Video (Shown on Frontend)'}
+              </h3>
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label>{lang === 'zh' ? '视频URL' : 'Video URL'}</Label>
+              <Input
+                value={form.videoUrl}
+                onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
+                placeholder={lang === 'zh' ? 'https://youtube.com/watch?v=... 或 https://vimeo.com/... 或直链.mp4' : 'YouTube / Vimeo / direct .mp4 URL'}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{lang === 'zh' ? '视频类型' : 'Video Type'}</Label>
+              <Select value={form.videoType} onValueChange={v => setForm(f => ({ ...f, videoType: v as 'youtube' | 'vimeo' | 'direct' }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="youtube">YouTube</SelectItem>
+                  <SelectItem value="vimeo">Vimeo</SelectItem>
+                  <SelectItem value="direct">{lang === 'zh' ? '直链（MP4）' : 'Direct (MP4)'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>{lang === 'zh' ? '视频标题（中文）' : 'Video Title (ZH)'}</Label>
+              <Input
+                value={form.videoTitleZh}
+                onChange={e => setForm(f => ({ ...f, videoTitleZh: e.target.value }))}
+                placeholder={lang === 'zh' ? '产品功能演示' : 'Product demo'}
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label>{lang === 'zh' ? '视频标题（英文）' : 'Video Title (EN)'}</Label>
+              <Input
+                value={form.videoTitleEn}
+                onChange={e => setForm(f => ({ ...f, videoTitleEn: e.target.value }))}
+                placeholder="Product feature demonstration"
+              />
+            </div>
+
+            {/* 供应商信息（仅后台可见） */}
+            <div className="md:col-span-2 pt-2 border-t border-border/50">
+              <h3 className="text-sm font-semibold text-amber-600 mb-1">
+                {lang === 'zh' ? '🔒 供应商信息（仅后台可见，不在前台显示）' : '🔒 Supplier Info (Admin Only, Not Shown on Frontend)'}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                {lang === 'zh' ? '这些信息仅供内部参考，不会在网站前台显示给客户。' : 'This info is for internal reference only and will NOT be displayed to customers on the frontend.'}
+              </p>
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label>{lang === 'zh' ? '供应商产品链接' : 'Supplier Product URL'}</Label>
+              <Input
+                value={form.supplierUrl}
+                onChange={e => setForm(f => ({ ...f, supplierUrl: e.target.value }))}
+                placeholder="https://1688.com/... 或 https://alibaba.com/..."
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{lang === 'zh' ? '供应商价格（USD）' : 'Supplier Price (USD)'}</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={form.supplierPrice}
+                onChange={e => setForm(f => ({ ...f, supplierPrice: e.target.value }))}
+                placeholder="12.50"
+              />
+            </div>
+
             <div className="flex items-center gap-2 md:col-span-2">
               <Switch
                 checked={form.featured}

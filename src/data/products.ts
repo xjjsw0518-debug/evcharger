@@ -32,6 +32,13 @@ export interface IProduct {
   source?: 'mock' | 'user' | 'csv';
   ceCertified?: boolean;
   sniNote?: boolean;          // SNI certification handled by importer
+  // 产品视频（前台显示）
+  videoUrl?: string;          // 视频URL（YouTube/Vimeo/直链）
+  videoType?: 'youtube' | 'vimeo' | 'direct';  // 视频类型
+  videoTitle?: { zh: string; en: string };      // 视频标题
+  // 供应商信息（仅后台可见，不在前台显示）
+  supplierUrl?: string;       // 供应商产品链接
+  supplierPrice?: number;     // 供应商产品价格（USD）
   createdAt: number;
 }
 
