@@ -12,6 +12,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    cssMinify: false,
+    cssMinify: true,
+    minify: 'esbuild',
+    target: 'es2018',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+        },
+      },
+    },
   },
 })

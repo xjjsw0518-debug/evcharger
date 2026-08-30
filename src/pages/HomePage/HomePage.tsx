@@ -7,6 +7,7 @@ import CategoriesSection from './sections/CategoriesSection';
 import VideoSection from './sections/VideoSection';
 import FeaturedSection from './sections/FeaturedSection';
 import AdvantagesSection from './sections/AdvantagesSection';
+import AboutIntroSection from './sections/AboutIntroSection';
 import WhyWholesaleSection from './sections/WhyWholesaleSection';
 import CTASection from './sections/CTASection';
 
@@ -51,6 +52,7 @@ export default function HomePage() {
         <VideoSection />
         <FeaturedSection />
         <AdvantagesSection />
+        <AboutIntroSection />
         <WhyWholesaleSection />
         <CTASection />
       </main>
