@@ -1,22 +1,19 @@
 {
-  "name": "miaoda-vite-react-app",
-  "version": "0.1.0",
+  "name": "youpei-ev-charging",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "build": "bash scripts/build.sh",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json",
-    "lint": "concurrently npm:typecheck npm:lint:eslint",
-    "lint:eslint": "eslint src",
-    "precommit": "npm run lint",
-    "prepare": "node scripts/setup-git-hooks.mjs"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.2.2",
-    "@lark-apaas/client-toolkit-lite": "^1.1.26",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -75,11 +72,10 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@lark-apaas/coding-preset-vite-react": "^1.0.19",
-    "@lark-apaas/coding-presets-react": "^0.1.0",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.0",
     "concurrently": "^9",
     "eslint": "^9",
     "typescript": "~5.9",
