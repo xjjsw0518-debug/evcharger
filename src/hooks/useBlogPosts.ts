@@ -1,14 +1,55 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { MOCK_BLOG_POSTS, type IBlogPost } from '@/data/blog'
 
-const STORAGE_KEY = '__auto_parts_blog_posts'
+const STORAGE_KEY = '__auto_parts_blog_posts_v2'
+
+// 数据迁移：确保每篇文章都有完整的必要字段，防止旧数据导致崩溃
+function migratePost(p: unknown, index: number): IBlogPost {
+  const post = p as Partial<IBlogPost>
+  const fallbackTitle = `文章 ${index + 1}`
+  const fallbackSummary = '暂无摘要'
+  const fallbackContent = '暂无内容'
+
+  return {
+    id: post.id || `blog-migrated-${Date.now()}-${index}`,
+    title: {
+      zh: post.title?.zh || fallbackTitle,
+      en: post.title?.en || fallbackTitle,
+    },
+    category: post.category || 'industry',
+    coverImage: post.coverImage || '',
+    author: post.author || 'Admin',
+    summary: {
+      zh: post.summary?.zh || fallbackSummary,
+      en: post.summary?.en || fallbackSummary,
+    },
+    content: {
+      zh: post.content?.zh || fallbackContent,
+      en: post.content?.en || fallbackContent,
+    },
+    videoUrl: post.videoUrl || undefined,
+    videoType: post.videoType || undefined,
+    publishDate: post.publishDate || new Date().toISOString().split('T')[0],
+    views: typeof post.views === 'number' ? post.views : 0,
+    source: post.source || 'user',
+    status: post.status || 'published',
+    scheduledAt: post.scheduledAt,
+    createdAt: post.createdAt || Date.now(),
+  }
+}
 
 function loadPosts(): IBlogPost[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return parsed
+      if (Array.isArray(parsed)) {
+        // 对每篇文章进行数据迁移，确保字段完整
+        const migrated = parsed.map((p, i) => migratePost(p, i))
+        // 保存迁移后的数据
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
+        return migrated
+      }
     }
   } catch {
     // 解析失败回退到 mock

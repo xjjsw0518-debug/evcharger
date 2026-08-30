@@ -58,9 +58,9 @@ export default function BlogDetailPage() {
     );
   }
 
-  const title = post.title[lang as 'zh' | 'en'];
-  const summary = post.summary[lang as 'zh' | 'en'];
-  const content = post.content[lang as 'zh' | 'en'];
+  const title = post.title?.[lang as 'zh' | 'en'] || 'Untitled';
+  const summary = post.summary?.[lang as 'zh' | 'en'] || '';
+  const content = post.content?.[lang as 'zh' | 'en'] || '';
 
   // JSON-LD Article
   const articleJsonLd = {

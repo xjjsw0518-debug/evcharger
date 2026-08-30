@@ -165,8 +165,8 @@ export default function BlogListPage() {
 }
 
 function BlogCard({ post, catName, lang, onClick }: { post: IBlogPost; catName: string; lang: string; onClick: () => void }) {
-  const title = post.title[lang as 'zh' | 'en'];
-  const summary = post.summary[lang as 'zh' | 'en'];
+  const title = post.title?.[lang as 'zh' | 'en'] || 'Untitled';
+  const summary = post.summary?.[lang as 'zh' | 'en'] || '';
   const summaryTruncated = summary.length > 100 ? summary.slice(0, 100) + '...' : summary;
 
   return (
