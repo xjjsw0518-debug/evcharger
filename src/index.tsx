@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
-import { AppContainer, ErrorRender } from "@lark-apaas/client-toolkit-lite";
 import App from "./app";
 import "./index.css";
 
