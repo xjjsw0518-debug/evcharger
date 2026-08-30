@@ -1,7 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { MOCK_BLOG_POSTS, type IBlogPost } from '@/data/blog'
 
-const STORAGE_KEY = '__auto_parts_blog_posts_v2'
+const STORAGE_KEY = '__auto_parts_blog_posts_v3'
+
+// 安全获取 mock 数据，防止数据导入失败导致崩溃
+function getMockPosts(): IBlogPost[] {
+  try {
+    if (!MOCK_BLOG_POSTS || !Array.isArray(MOCK_BLOG_POSTS)) {
+      console.warn('MOCK_BLOG_POSTS is not an array, using empty array')
+      return []
+    }
+    return MOCK_BLOG_POSTS.map(p => ({ ...p, status: 'published' as const }))
+  } catch (e) {
+    console.error('Failed to load MOCK_BLOG_POSTS:', e)
+    return []
+  }
+}
 
 // 数据迁移：确保每篇文章都有完整的必要字段，防止旧数据导致崩溃
 function migratePost(p: unknown, index: number): IBlogPost {
@@ -51,17 +65,25 @@ function loadPosts(): IBlogPost[] {
         return migrated
       }
     }
-  } catch {
-    // 解析失败回退到 mock
+  } catch (e) {
+    console.error('Failed to load posts from localStorage:', e)
   }
   // 首次：写入 mock 数据，默认全部published
-  const withStatus = MOCK_BLOG_POSTS.map(p => ({ ...p, status: 'published' as const }))
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
+  const withStatus = getMockPosts()
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
+  } catch (e) {
+    console.error('Failed to save posts to localStorage:', e)
+  }
   return withStatus
 }
 
 function savePosts(posts: IBlogPost[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
+  } catch (e) {
+    console.error('Failed to save posts:', e)
+  }
 }
 
 // 检查并发布到期的定时文章
@@ -163,8 +185,12 @@ export function useBlogPosts() {
   }, [])
 
   const resetPosts = useCallback(() => {
-    const withStatus = MOCK_BLOG_POSTS.map(p => ({ ...p, status: 'published' as const }))
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
+    const withStatus = getMockPosts()
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
+    } catch (e) {
+      console.error('Failed to reset posts:', e)
+    }
     setPosts(withStatus)
   }, [])
 
