@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 import { MOCK_CATEGORIES, type ICategory } from '@/data/categories'
 
 const STORAGE_KEY = '__youpei_categories'
 
 function loadCategories(): ICategory[] {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed
@@ -14,12 +13,12 @@ function loadCategories(): ICategory[] {
   } catch {
     // 忽略
   }
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_CATEGORIES))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_CATEGORIES))
   return MOCK_CATEGORIES
 }
 
 function saveCategories(cats: ICategory[]) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(cats))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cats))
 }
 
 export function useCategories() {

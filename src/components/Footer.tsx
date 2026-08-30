@@ -6,7 +6,6 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useContactSettings } from '@/hooks/useContactSettings';
 import Logo from '@/components/Logo';
 import SocialIcon from '@/components/SocialIcon';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 
 export default function Footer() {
   const { lang } = useLang();
@@ -54,12 +53,12 @@ export default function Footer() {
               {email && (
                 <div className="flex items-start gap-2.5">
                   <Mail className="size-4 shrink-0 mt-0.5 text-background/60" />
-                  <UniversalLink
-                    to={`mailto:${email}`}
+                  <a
+                    href={`mailto:${email}`}
                     className="text-background/80 hover:text-background transition-colors break-all"
                   >
                     {email}
-                  </UniversalLink>
+                  </a>
                 </div>
               )}
               {settings.footerPhone && (
@@ -139,9 +138,9 @@ export default function Footer() {
             {socials.length > 0 && (
               <div className="mt-6 flex flex-wrap gap-3">
                 {socials.map(item => (
-                  <UniversalLink
+                  <a
                     key={item.id}
-                    to={item.url}
+                    href={item.url}
                     target="_blank"
                     rel="noreferrer"
                     className="group w-9 h-9 rounded-full bg-background/10 hover:bg-background/20 flex items-center justify-center text-background/80 hover:text-white transition-all hover:scale-110"
@@ -149,7 +148,7 @@ export default function Footer() {
                     aria-label={item.platform}
                   >
                     <SocialIcon platform={item.platform} className="w-4 h-4" />
-                  </UniversalLink>
+                  </a>
                 ))}
               </div>
             )}
@@ -162,12 +161,12 @@ export default function Footer() {
              {copyright}
            </p>
            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-background/60">
-             <UniversalLink to="#" onClick={e => e.preventDefault()} className="hover:text-background/90 transition-colors">
+             <a href="#" onClick={e => e.preventDefault()} className="hover:text-background/90 transition-colors">
                {lang === 'zh' ? '隐私政策' : 'Privacy Policy'}
-             </UniversalLink>
-             <UniversalLink to="#" onClick={e => e.preventDefault()} className="hover:text-background/90 transition-colors">
+             </a>
+             <a href="#" onClick={e => e.preventDefault()} className="hover:text-background/90 transition-colors">
                {lang === 'zh' ? '服务条款' : 'Terms of Service'}
-             </UniversalLink>
+             </a>
            </div>
          </div>
       </div>

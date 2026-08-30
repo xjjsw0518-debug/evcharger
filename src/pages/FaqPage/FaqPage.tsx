@@ -12,7 +12,6 @@ import { useLang, getText } from '@/context/LanguageContext';
 import { useFaqs } from '@/hooks/useFaqs';
 import { useContactSettings } from '@/hooks/useContactSettings';
 import { MOCK_FAQ_CATEGORIES } from '@/data/faq';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 
 export default function FaqPage() {
   const { lang } = useLang();
@@ -163,14 +162,14 @@ export default function FaqPage() {
                 ? '欢迎联系我们的客服团队，我们将在24小时内回复您'
                 : 'Contact our customer service team and we will reply within 24 hours'}
             </p>
-            <UniversalLink
-              to={getWaUrl("Hi, I'm interested in your auto parts")}
+            <a
+              href={getWaUrl("Hi, I'm interested in your auto parts")}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center px-6 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
             >
               {lang === 'zh' ? '联系客服' : 'Contact us'}
-            </UniversalLink>
+            </a>
           </div>
         </div>
       </section>

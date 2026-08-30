@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 import { MOCK_BLOG_POSTS, type IBlogPost } from '@/data/blog'
 
 const STORAGE_KEY = '__auto_parts_blog_posts'
 
 function loadPosts(): IBlogPost[] {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed
@@ -16,12 +15,12 @@ function loadPosts(): IBlogPost[] {
   }
   // 首次：写入 mock 数据，默认全部published
   const withStatus = MOCK_BLOG_POSTS.map(p => ({ ...p, status: 'published' as const }))
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
   return withStatus
 }
 
 function savePosts(posts: IBlogPost[]) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
 }
 
 // 检查并发布到期的定时文章
@@ -124,7 +123,7 @@ export function useBlogPosts() {
 
   const resetPosts = useCallback(() => {
     const withStatus = MOCK_BLOG_POSTS.map(p => ({ ...p, status: 'published' as const }))
-    scopedStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
     setPosts(withStatus)
   }, [])
 

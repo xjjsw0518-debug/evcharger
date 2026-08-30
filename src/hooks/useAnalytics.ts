@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 
 const STORAGE_KEY = '__youpei_analytics'
 
@@ -37,7 +36,7 @@ const DEFAULT_DATA: AnalyticsData = {
 
 function loadData(): AnalyticsData {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       return { ...DEFAULT_DATA, ...parsed }
@@ -49,7 +48,7 @@ function loadData(): AnalyticsData {
 }
 
 function saveData(data: AnalyticsData) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
 function getTodayStr(): string {
@@ -58,10 +57,10 @@ function getTodayStr(): string {
 
 function getSessionId(): string {
   const key = '__youpei_session_id'
-  let sid = scopedStorage.getItem(key)
+  let sid = localStorage.getItem(key)
   if (!sid) {
     sid = `sess-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    scopedStorage.setItem(key, sid)
+    localStorage.setItem(key, sid)
   }
   return sid
 }
@@ -134,7 +133,7 @@ export function useAnalytics() {
   // 记录国家（从ipapi.co获取）
   const trackCountry = useCallback(async () => {
     const countryKey = '__youpei_visitor_country'
-    const cached = scopedStorage.getItem(countryKey)
+    const cached = localStorage.getItem(countryKey)
     if (cached) {
       _addCountry(cached)
       return
@@ -143,7 +142,7 @@ export function useAnalytics() {
       const res = await fetch('https://ipapi.co/json/')
       const json = await res.json()
       const country = json.country_name || json.country || 'Unknown'
-      scopedStorage.setItem(countryKey, country)
+      localStorage.setItem(countryKey, country)
       _addCountry(country)
     } catch {
       _addCountry('Unknown')

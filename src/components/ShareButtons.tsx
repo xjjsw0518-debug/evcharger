@@ -3,8 +3,6 @@ import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLang } from '@/context/LanguageContext';
 import { toast } from 'sonner';
-import { resolveAppUrl } from '@lark-apaas/client-toolkit-lite';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 
 interface ShareButtonsProps {
   url: string;
@@ -43,7 +41,7 @@ export default function ShareButtons({ url, title, description = '', size = 'sm'
   const { lang } = useLang();
   const [copied, setCopied] = useState(false);
 
-  const fullUrl = resolveAppUrl(url);
+  const fullUrl = window.location.origin + url;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDesc = encodeURIComponent(description || title);
@@ -97,10 +95,10 @@ export default function ShareButtons({ url, title, description = '', size = 'sm'
           className={`gap-1.5 transition-colors ${className}`}
           aria-label={`Share on ${name}`}
         >
-          <UniversalLink to={href} target="_blank" rel="noopener noreferrer">
+          <a href={href} target="_blank" rel="noopener noreferrer">
             <Icon />
             {showLabel && <span className="hidden sm:inline">{name}</span>}
-          </UniversalLink>
+          </a>
         </Button>
       ))}
       <Button

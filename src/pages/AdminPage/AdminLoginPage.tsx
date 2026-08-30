@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Logo from '@/components/Logo';
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite';
-import { logger } from '@lark-apaas/client-toolkit-lite';
 import FloatingContactButtons from '@/components/FloatingContactButtons';
 
 const LOCK_KEY = '__youpei_admin_lock';
@@ -16,7 +14,7 @@ const SESSION_KEY = '__youpei_admin_session';
 
 function getLockState(): { attempts: number; lockedUntil: number | null } {
   try {
-    const raw = scopedStorage.getItem(LOCK_KEY);
+    const raw = localStorage.getItem(LOCK_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
@@ -25,14 +23,14 @@ function getLockState(): { attempts: number; lockedUntil: number | null } {
       };
     }
   } catch (e) {
-    logger.warn('Failed to parse lock state:', String(e));
+    console.warn('Failed to parse lock state:', String(e));
   }
   return { attempts: 0, lockedUntil: null };
 }
 
 function setLockState(attempts: number, lockedUntil: number | null) {
   try {
-    scopedStorage.setItem(LOCK_KEY, JSON.stringify({ attempts, lockedUntil }));
+    localStorage.setItem(LOCK_KEY, JSON.stringify({ attempts, lockedUntil }));
   } catch {
     // ignore
   }
@@ -40,7 +38,7 @@ function setLockState(attempts: number, lockedUntil: number | null) {
 
 function clearLockState() {
   try {
-    scopedStorage.removeItem(LOCK_KEY);
+    localStorage.removeItem(LOCK_KEY);
   } catch {
     // ignore
   }

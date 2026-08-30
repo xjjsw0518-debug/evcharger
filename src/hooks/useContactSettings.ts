@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite';
 import { SITE_CONFIG } from '@/data/site';
 import { MOCK_COMPANY } from '@/data/company';
 
@@ -31,7 +30,7 @@ const DEFAULT_SETTINGS: ContactSettings = {
 
 function loadSettings(): ContactSettings {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       return { ...DEFAULT_SETTINGS, ...parsed };
@@ -43,7 +42,7 @@ function loadSettings(): ContactSettings {
 }
 
 function saveSettings(settings: ContactSettings) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }
 
 /**

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 import { MOCK_COMPANY, type ICompany } from '@/data/company'
 
 const STORAGE_KEY = '__youpei_about_content'
@@ -7,7 +6,7 @@ const ENABLED_KEY = '__youpei_about_enabled'
 
 function loadContent(): ICompany {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       return { ...MOCK_COMPANY, ...parsed }
@@ -19,11 +18,11 @@ function loadContent(): ICompany {
 }
 
 function saveContent(content: ICompany) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(content))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(content))
 }
 
 function loadEnabled(): boolean {
-  const val = scopedStorage.getItem(ENABLED_KEY)
+  const val = localStorage.getItem(ENABLED_KEY)
   return val === null ? true : val === 'true'
 }
 
@@ -48,14 +47,14 @@ export function useAboutContent() {
 
   const updateAboutEnabled = useCallback((enabled: boolean) => {
     setIsAboutEnabled(enabled)
-    scopedStorage.setItem(ENABLED_KEY, String(enabled))
+    localStorage.setItem(ENABLED_KEY, String(enabled))
   }, [])
 
   const resetContent = useCallback(() => {
     saveContent(MOCK_COMPANY)
     setContent(MOCK_COMPANY)
     setIsAboutEnabled(true)
-    scopedStorage.setItem(ENABLED_KEY, 'true')
+    localStorage.setItem(ENABLED_KEY, 'true')
   }, [])
 
   return { content, loaded, updateContent, resetContent, isAboutEnabled, updateAboutEnabled }

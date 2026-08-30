@@ -6,7 +6,6 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
-import { scopedStorage, logger } from '@lark-apaas/client-toolkit-lite';
 import { toast } from 'sonner';
 import {
   translations,
@@ -47,9 +46,9 @@ function isValidLang(v: unknown): v is Lang {
 function detectInitialLang(): { lang: Lang; userSelected: Lang | null; country: string | null } {
   try {
     // 1. 用户手动选择的语言（优先级最高）
-    const userLang = scopedStorage.getItem(LANG_KEY);
-    const isAuto = scopedStorage.getItem(AUTO_KEY) === '1' || !userLang;
-    const savedCountry = scopedStorage.getItem(COUNTRY_KEY);
+    const userLang = localStorage.getItem(LANG_KEY);
+    const isAuto = localStorage.getItem(AUTO_KEY) === '1' || !userLang;
+    const savedCountry = localStorage.getItem(COUNTRY_KEY);
 
     if (userLang && isValidLang(userLang) && !isAuto) {
       return { lang: userLang, userSelected: userLang, country: savedCountry || null };
@@ -60,7 +59,7 @@ function detectInitialLang(): { lang: Lang; userSelected: Lang | null; country: 
     const browserLang = detectLangFromBrowser();
     return { lang: browserLang, userSelected: null, country: savedCountry || null };
   } catch (e) {
-    logger.warn('Language init error:', String(e));
+    console.warn('Language init error:', String(e));
     return { lang: 'en', userSelected: null, country: null };
   }
 }
@@ -83,7 +82,7 @@ async function fetchCountry(timeoutMs: number): Promise<string | null> {
     }
     return null;
   } catch (e) {
-    logger.info('IP geo lookup failed, falling back to browser language:', String(e));
+    console.info('IP geo lookup failed, falling back to browser language:', String(e));
     return null;
   } finally {
     clearTimeout(timeoutId);
@@ -120,7 +119,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (country) {
         setDetectedCountry(country);
         try {
-          scopedStorage.setItem(COUNTRY_KEY, country);
+          localStorage.setItem(COUNTRY_KEY, country);
         } catch {
           // ignore
         }
@@ -156,8 +155,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLangState(newLang);
     setUserSelected(newLang);
     try {
-      scopedStorage.setItem(LANG_KEY, newLang);
-      scopedStorage.removeItem(AUTO_KEY);
+      localStorage.setItem(LANG_KEY, newLang);
+      localStorage.removeItem(AUTO_KEY);
     } catch {
       // ignore
     }
@@ -166,8 +165,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const resetToAuto = useCallback(() => {
     setUserSelected(null);
     try {
-      scopedStorage.setItem(AUTO_KEY, '1');
-      scopedStorage.removeItem(LANG_KEY);
+      localStorage.setItem(AUTO_KEY, '1');
+      localStorage.removeItem(LANG_KEY);
     } catch {
       // ignore
     }

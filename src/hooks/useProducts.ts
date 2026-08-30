@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 import { MOCK_PRODUCTS, type IProduct } from '@/data/products'
 
 const STORAGE_KEY = '__auto_parts_products'
@@ -7,7 +6,7 @@ const STORAGE_KEY = '__auto_parts_products'
 // 从 localStorage 加载产品，首次访问用 mock 初始化
 function loadProducts(): IProduct[] {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed
@@ -16,12 +15,12 @@ function loadProducts(): IProduct[] {
     // 解析失败回退到 mock
   }
   // 首次：写入 mock 数据
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_PRODUCTS))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_PRODUCTS))
   return MOCK_PRODUCTS
 }
 
 function saveProducts(products: IProduct[]) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(products))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
 }
 
 export function useProducts() {

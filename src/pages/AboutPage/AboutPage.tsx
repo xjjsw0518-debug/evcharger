@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
 import { useAboutContent } from '@/hooks/useAboutContent';
 import { useContactSettings } from '@/hooks/useContactSettings';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import Seo from '@/components/Seo';
@@ -176,16 +175,16 @@ export default function AboutPage() {
             {lang === 'zh' ? '立即联系我们，获取专属报价和样品支持' : 'Contact us now for a custom quote and sample support'}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <UniversalLink to={getWaUrl()}>
+            <a href={getWaUrl()}>
               <Button size="lg" variant="secondary" className="w-full sm:w-auto">
                 {lang === 'zh' ? 'WhatsApp联系' : 'Contact via WhatsApp'}
               </Button>
-            </UniversalLink>
-            <UniversalLink to={`mailto:${content.contact.email}`}>
+            </a>
+            <a href={`mailto:${content.contact.email}`}>
               <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                 {lang === 'zh' ? '发送邮件' : 'Send Email'}
               </Button>
-            </UniversalLink>
+            </a>
           </div>
         </div>
       </section>

@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 import { MOCK_FAQS, type IFaqItem } from '@/data/faq'
 
 const STORAGE_KEY = '__auto_parts_faqs'
 
 function loadFaqs(): IFaqItem[] {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed
@@ -15,12 +14,12 @@ function loadFaqs(): IFaqItem[] {
     // 解析失败回退到 mock
   }
   // 首次：写入 mock 数据
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_FAQS))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_FAQS))
   return MOCK_FAQS
 }
 
 function saveFaqs(faqs: IFaqItem[]) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(faqs))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(faqs))
 }
 
 export function useFaqs() {
@@ -63,7 +62,7 @@ export function useFaqs() {
   }, [])
 
   const resetFaqs = useCallback(() => {
-    scopedStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_FAQS))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_FAQS))
     setFaqs(MOCK_FAQS)
   }, [])
 

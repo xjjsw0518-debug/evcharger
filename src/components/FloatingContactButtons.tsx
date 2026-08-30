@@ -16,7 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 import { Image } from '@/components/ui/image';
 import { useContactSettings } from '@/hooks/useContactSettings';
 
@@ -36,15 +35,15 @@ export default function FloatingContactButtons() {
         {/* WhatsApp Button */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <UniversalLink
-              to={waUrl}
+            <a
+              href={waUrl}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center size-14 rounded-full bg-[#25D366] text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
               aria-label="Chat on WhatsApp"
             >
               <SocialIcon platform="whatsapp" className="size-7" />
-            </UniversalLink>
+            </a>
           </TooltipTrigger>
           <TooltipContent side="left" sideOffset={8}>
             <p className="text-sm font-medium">Chat with us</p>

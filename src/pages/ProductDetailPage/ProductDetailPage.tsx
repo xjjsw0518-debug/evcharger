@@ -43,7 +43,6 @@ import { useContactSettings } from '@/hooks/useContactSettings';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { IProduct, ISku } from '@/data/products';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -356,8 +355,8 @@ export default function ProductDetailPage() {
 
               {/* 操作按钮 - WhatsApp 直接咨询 */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <UniversalLink
-                  to={getContactWaUrl(`Hi, I'm interested in wholesale ${productName}. Please send me the catalog and price list.`)}
+                <a
+                  href={getContactWaUrl(`Hi, I'm interested in wholesale ${productName}. Please send me the catalog and price list.`)}
                   target="_blank"
                   rel="noreferrer"
                   className="flex-1"
@@ -369,7 +368,7 @@ export default function ProductDetailPage() {
                     <MessageCircle className="size-5 mr-2" />
                     {lang === 'zh' ? '在 WhatsApp 上咨询' : 'Inquire on WhatsApp'}
                   </Button>
-                </UniversalLink>
+                </a>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="inline-flex">

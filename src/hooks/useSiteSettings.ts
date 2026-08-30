@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scopedStorage } from '@lark-apaas/client-toolkit-lite'
 import { SITE_CONFIG } from '@/data/site'
 
 const STORAGE_KEY = '__youpei_site_settings'
@@ -107,7 +106,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 
 function loadSettings(): SiteSettings {
   try {
-    const raw = scopedStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       return { ...DEFAULT_SETTINGS, ...parsed }
@@ -119,7 +118,7 @@ function loadSettings(): SiteSettings {
 }
 
 function saveSettings(settings: SiteSettings) {
-  scopedStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
 }
 
 export function useSiteSettings() {

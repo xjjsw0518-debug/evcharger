@@ -6,7 +6,6 @@ import { useLang } from '@/context/LanguageContext';
 import { useContactSettings } from '@/hooks/useContactSettings';
 import { Image } from '@/components/ui/image';
 import Seo from '@/components/Seo';
-import { UniversalLink } from '@lark-apaas/client-toolkit-lite';
 
 export default function ContactPage() {
   const { t, lang } = useLang();
@@ -147,9 +146,9 @@ export default function ContactPage() {
                     return (
                       <div key={idx}>
                         {item.href ? (
-                          <UniversalLink to={item.href} target="_blank" rel="noreferrer" className="block hover:opacity-80 transition-opacity">
+                          <a href={item.href} target="_blank" rel="noreferrer" className="block hover:opacity-80 transition-opacity">
                             {content}
-                          </UniversalLink>
+                          </a>
                         ) : content}
                       </div>
                     );
