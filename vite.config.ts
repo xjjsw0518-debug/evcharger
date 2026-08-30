@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    cssMinify: true,
+    cssMinify: false,
     minify: 'esbuild',
     target: 'es2018',
   },
