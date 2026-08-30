@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, MessageCircle, Factory, Shield, Globe, Package } from 'lucide-react';
+import { ArrowRight, MessageCircle, Factory, Shield, Globe, Package, Facebook, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLang } from '@/context/LanguageContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -75,21 +75,21 @@ export default function HeroSection() {
         }}
       />
 
-      {/* 内容容器 - 受垂直偏移控制 - 左对齐靠近左边框 */}
+      {/* 内容容器 - 左边垂直居中，行间距增大 */}
       <div
-        className="relative max-w-6xl ml-0 px-6 md:px-12 lg:px-16"
+        className="relative flex items-center w-full"
         style={{
-          paddingTop: `calc(${settings.heroVerticalOffset}% + 5rem)`,
-          paddingBottom: '5rem',
-          minHeight: '60vh',
+          minHeight: '68vh',
+          paddingTop: settings.heroVerticalOffset ? `${settings.heroVerticalOffset}%` : 0,
         }}
       >
-        <div className={`space-y-6 flex flex-col ${alignClass}`}>
+        <div className="w-full max-w-4xl ml-0 px-6 md:px-12 lg:px-16">
+          <div className={`space-y-8 flex flex-col ${alignClass}`}>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight"
+            className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-snug tracking-tight"
           >
             {titleLines.map((line, i) => {
               const isLast = i === titleLines.length - 1 && titleLines.length > 1;
@@ -129,7 +129,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className={`flex flex-wrap pt-2 ${justifyClass}`}
+            className={`flex flex-wrap pt-4 ${justifyClass}`}
             style={{ gap: `${settings.heroButtonGap}px` }}
           >
             <Button
@@ -150,6 +150,59 @@ export default function HeroSection() {
               WhatsApp Inquiry
             </Button>
           </motion.div>
+
+          {/* 社交媒体图标 - 关注我们 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className={`flex items-center gap-4 pt-2 ${justifyClass}`}
+          >
+            <span className="text-white/50 text-xs font-medium tracking-wider uppercase">
+              {lang === 'zh' ? '关注我们' : 'Follow Us'}
+            </span>
+            <div className="flex items-center gap-3">
+              {/* Facebook */}
+              {settings.footerSocials?.find(s => s.platform === 'facebook')?.url && (
+                <a
+                  href={settings.footerSocials.find(s => s.platform === 'facebook')!.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full bg-white/10 hover:bg-[#1877F2] text-white flex items-center justify-center transition-all duration-300 hover:scale-110"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="size-4" />
+                </a>
+              )}
+              {/* Instagram */}
+              {settings.footerSocials?.find(s => s.platform === 'instagram')?.url && (
+                <a
+                  href={settings.footerSocials.find(s => s.platform === 'instagram')!.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full bg-white/10 hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#FCB045] text-white flex items-center justify-center transition-all duration-300 hover:scale-110"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="size-4" />
+                </a>
+              )}
+              {/* TikTok - 使用内联 SVG */}
+              {settings.footerSocials?.find(s => s.platform === 'tiktok')?.url && (
+                <a
+                  href={settings.footerSocials.find(s => s.platform === 'tiktok')!.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full bg-white/10 hover:bg-[#000000] text-white flex items-center justify-center transition-all duration-300 hover:scale-110"
+                  aria-label="TikTok"
+                >
+                  <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z"/>
+                  </svg>
+                </a>
+              )}
+            </div>
+          </motion.div>
+          </div>
         </div>
       </div>
 

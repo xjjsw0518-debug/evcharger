@@ -65,8 +65,9 @@ const DEFAULT_QUICK_LINKS: FooterQuickLink[] = [
 const DEFAULT_SOCIALS: FooterSocialItem[] = [
   { id: 's1', platform: 'facebook', url: 'https://facebook.com/youpeiauto' },
   { id: 's2', platform: 'instagram', url: 'https://instagram.com/youpei_auto' },
-  { id: 's3', platform: 'linkedin', url: 'https://linkedin.com/company/youpei-auto' },
-  { id: 's4', platform: 'youtube', url: 'https://youtube.com/@youpeiauto' },
+  { id: 's3', platform: 'tiktok', url: 'https://tiktok.com/@youpeiauto' },
+  { id: 's4', platform: 'linkedin', url: 'https://linkedin.com/company/youpei-auto' },
+  { id: 's5', platform: 'youtube', url: 'https://youtube.com/@youpeiauto' },
 ]
 
 const DEFAULT_SETTINGS: SiteSettings = {
