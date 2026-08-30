@@ -1,3 +1,6 @@
 User-agent: *
 Allow: /
-Sitemap: https://youpei-auto.example.com/sitemap.xml
+Disallow: /XUEJIAN-manage
+Disallow: /admin
+
+Sitemap: https://evcharger.xjjsw0518.workers.dev/sitemap.xml

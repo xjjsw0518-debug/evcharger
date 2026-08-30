@@ -24,7 +24,7 @@ export const SITE_CONFIG = {
     zh: 'EV充电配件批发,GBT充电枪厂家,电动汽车充电转接器,便携式充电桩批发,V2L放电器,东南亚电动车配件进口商,中国充电配件工厂',
     en: 'wholesale EV charging gun, bulk EV charger, China EV charging adapter factory, GBT to Type2 adapter wholesale, wholesale 7kW 32A portable EV charger China, bulk GBT charging cable, V2L discharge adapter wholesale price, EV charging accessories importer Southeast Asia',
   },
-  url: 'https://youpei-auto.example.com',
+  url: 'https://evcharger.xjjsw0518.workers.dev',
   targetMarket: 'Southeast Asia',
   wechatQrUrl: 'https://picsum.photos/seed/wechat-qr-code/300/300',
   logo: {

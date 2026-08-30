@@ -90,7 +90,7 @@ export default function BlogDetailPage() {
       <Seo
         title={title}
         description={summary}
-        keywords={`${title}, ${catName(post.category)}, ${lang === 'zh' ? '汽配' : 'auto parts'}`}
+        keywords={`${title}, ${catName(post.category)}, ${lang === 'zh' ? 'EV充电配件,电动汽车充电' : 'EV charging accessories, electric vehicle charging, wholesale EV charger'}`}
         image={post.coverImage}
         type="article"
         jsonLd={articleJsonLd}
