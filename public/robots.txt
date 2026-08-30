@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://youpei-auto.example.com/sitemap.xml

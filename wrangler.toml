@@ -1,0 +1,5 @@
+name = "youpei-auto"
+compatibility_date = "2024-12-12"
+
+[vars]
+# 环境变量占位，按需配置
