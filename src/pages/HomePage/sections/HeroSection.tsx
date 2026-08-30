@@ -85,16 +85,6 @@ export default function HeroSection() {
         }}
       >
         <div className={`space-y-6 flex flex-col ${alignClass}`}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-medium"
-          >
-            <span className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
-            {lang === 'zh' ? '中国工厂直供 · 仅批发' : 'China Factory Direct · Wholesale Only'}
-          </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
