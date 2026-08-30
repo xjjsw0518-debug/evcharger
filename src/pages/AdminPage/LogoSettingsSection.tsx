@@ -24,6 +24,8 @@ export default function LogoSettingsSection() {
   const { lang } = useLang();
   const { settings, updateSettings, resetSettings } = useSiteSettings();
   const [urlInput, setUrlInput] = useState(settings.logoUrl);
+  const [brandNameInput, setBrandNameInput] = useState(settings.brandName);
+  const [brandSubtitleInput, setBrandSubtitleInput] = useState(settings.brandSubtitle);
   const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,6 +36,14 @@ export default function LogoSettingsSection() {
     }
     updateSettings({ logoUrl: urlInput.trim() });
     toast.success(lang === 'zh' ? 'Logo已保存，全站立即生效' : 'Logo saved, applied site-wide');
+  };
+
+  const handleSaveBrand = () => {
+    updateSettings({
+      brandName: brandNameInput.trim() || 'youpei auto',
+      brandSubtitle: brandSubtitleInput.trim(),
+    });
+    toast.success(lang === 'zh' ? '品牌名称已保存，全站立即生效' : 'Brand name saved, applied site-wide');
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,10 +75,10 @@ export default function LogoSettingsSection() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl md:text-2xl font-bold text-foreground">
-            {lang === 'zh' ? 'Logo 设置' : 'Logo Settings'}
+            {lang === 'zh' ? 'Logo 与品牌设置' : 'Logo & Brand Settings'}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {lang === 'zh' ? '上传或修改站点Logo，保存后全站导航栏、页脚立即生效' : 'Upload or modify site logo, applied to header & footer instantly'}
+            {lang === 'zh' ? '上传或修改站点Logo、品牌名称和副标题，保存后全站导航栏、页脚立即生效' : 'Upload or modify site logo, brand name & subtitle, applied to header & footer instantly'}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => setResetOpen(true)} className="gap-1.5">
@@ -138,6 +148,38 @@ export default function LogoSettingsSection() {
           </CardContent>
         </Card>
 
+        {/* 品牌名称设置 */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle>{lang === 'zh' ? '品牌名称设置' : 'Brand Name Settings'}</CardTitle>
+            <CardDescription>
+              {lang === 'zh' ? '修改Logo旁边显示的公司名称和副标题，保存后全站立即生效' : 'Modify the brand name and subtitle displayed next to the logo'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>{lang === 'zh' ? '品牌名称' : 'Brand Name'}</Label>
+              <Input
+                value={brandNameInput}
+                onChange={e => setBrandNameInput(e.target.value)}
+                placeholder={lang === 'zh' ? '例如：youpei auto' : 'e.g., youpei auto'}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{lang === 'zh' ? '品牌副标题' : 'Brand Subtitle'}</Label>
+              <Input
+                value={brandSubtitleInput}
+                onChange={e => setBrandSubtitleInput(e.target.value)}
+                placeholder={lang === 'zh' ? '例如：EV Charging Specialist（留空则不显示）' : 'e.g., EV Charging Specialist (leave empty to hide)'}
+              />
+            </div>
+            <Button onClick={handleSaveBrand} className="w-full gap-1.5">
+              <ImageIcon className="size-4" />
+              {lang === 'zh' ? '保存品牌名称' : 'Save Brand Name'}
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* 预览区 */}
         <Card className="border-border/50">
           <CardHeader>
@@ -164,16 +206,21 @@ export default function LogoSettingsSection() {
                   />
                   <div className="flex flex-col leading-none">
                     <span
-                      className="font-bold text-lg tracking-tight"
+                      className="font-extrabold text-lg tracking-tight"
                       style={{
-                        background: 'linear-gradient(135deg, #1a73e8 0%, #4285f4 50%, #ff6d00 100%)',
+                        background: 'linear-gradient(135deg, #059669 0%, #10b981 40%, #f59e0b 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
                       }}
                     >
-                      youpei auto
+                      {settings.brandName || 'youpei auto'}
                     </span>
+                    {settings.brandSubtitle && (
+                      <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase">
+                        {settings.brandSubtitle}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -195,10 +242,12 @@ export default function LogoSettingsSection() {
                     style={{ width: 32, height: 32 }}
                   />
                   <div className="flex flex-col leading-none">
-                    <span className="font-bold text-base">youpei auto</span>
-                    <span className="text-[10px] text-background/60 tracking-widest uppercase">
-                      Auto Parts Supplier
-                    </span>
+                    <span className="font-bold text-base">{settings.brandName || 'youpei auto'}</span>
+                    {settings.brandSubtitle && (
+                      <span className="text-[10px] text-background/60 tracking-widest uppercase">
+                        {settings.brandSubtitle}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

@@ -18,6 +18,8 @@ export interface FooterSocialItem {
 
 export interface SiteSettings {
   logoUrl: string
+  brandName: string
+  brandSubtitle: string
   heroBgUrl: string
   heroTitleZh: string
   heroTitleEn: string
@@ -72,6 +74,8 @@ const DEFAULT_SOCIALS: FooterSocialItem[] = [
 
 const DEFAULT_SETTINGS: SiteSettings = {
   logoUrl: '',
+  brandName: 'youpei auto',
+  brandSubtitle: 'EV Charging Specialist',
   heroBgUrl: 'https://aka.doubaocdn.com/s/1miAfPPz6y',
   heroTitleZh: 'EV 充电配件批发\n中国工厂直供',
   heroTitleEn: 'Wholesale EV Charging Accessories\nDirect from China Factory',

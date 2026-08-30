@@ -9,7 +9,7 @@ interface LogoProps {
 }
 
 export default function Logo({ size = 'md', showText = true, className }: LogoProps) {
-  const { getLogoUrl, loaded } = useSiteSettings();
+  const { getLogoUrl, loaded, settings } = useSiteSettings();
 
   const sizeMap = {
     sm: { icon: 36, text: 'text-lg', gap: 'gap-2.5' },
@@ -18,6 +18,8 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
   };
   const s = sizeMap[size];
   const logoUrl = loaded ? getLogoUrl() : 'https://aka.doubaocdn.com/s/OhaBaatK4F';
+  const brandName = settings?.brandName || 'youpei auto';
+  const brandSubtitle = settings?.brandSubtitle || 'EV Charging Specialist';
 
   return (
     <div className={cn('flex items-center', s.gap, className)}>
@@ -28,7 +30,7 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
       >
         <Image
           src={logoUrl}
-          alt="youpei auto logo"
+          alt={`${brandName} logo`}
           width={s.icon}
           height={s.icon}
           className="object-contain"
@@ -47,11 +49,11 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
               textShadow: '0 1px 2px rgba(0,0,0,0.1)',
             }}
           >
-            youpei auto
+            {brandName}
           </span>
-          {size !== 'sm' && (
+          {size !== 'sm' && brandSubtitle && (
             <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase">
-              EV Charging Specialist
+              {brandSubtitle}
             </span>
           )}
         </div>
