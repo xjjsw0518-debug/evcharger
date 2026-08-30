@@ -75,9 +75,9 @@ export default function HeroSection() {
         }}
       />
 
-      {/* 内容容器 - 受垂直偏移控制 */}
+      {/* 内容容器 - 受垂直偏移控制 - 左对齐靠近左边框 */}
       <div
-        className="relative max-w-5xl mx-auto px-4 md:px-6"
+        className="relative max-w-6xl ml-0 px-6 md:px-12 lg:px-16"
         style={{
           paddingTop: `calc(${settings.heroVerticalOffset}% + 5rem)`,
           paddingBottom: '5rem',

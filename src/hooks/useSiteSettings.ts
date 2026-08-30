@@ -76,7 +76,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   heroTitleEn: 'Wholesale EV Charging Accessories\nDirect from China Factory',
   heroSubtitleZh: 'GBT / Type 2 充电枪、转接器、便携式充电桩、V2L 放电器全品类覆盖。MOQ 2-5 件起批，CE 认证，全球发货。',
   heroSubtitleEn: 'GBT / Type 2 charging guns, adapters, portable chargers, V2L adapters - all in one place. MOQ 2-5 pcs, CE certified, global shipping.',
-  heroAlign: 'center',
+  heroAlign: 'left',
   heroVerticalOffset: 0,
   heroButtonGap: 12,
   videoUrl: '',
