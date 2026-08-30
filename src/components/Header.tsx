@@ -65,7 +65,7 @@ export default function Header() {
         {SITE_CONFIG.wholesaleBanner[lang as 'zh' | 'en']}
       </div>
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <div className="flex h-16 items-center justify-between gap-3">
+        <div className="flex h-20 items-center justify-between gap-3">
           {/* 左侧：Logo */}
           <NavLink to="/" className="flex items-center shrink-0">
             <Logo size="md" />

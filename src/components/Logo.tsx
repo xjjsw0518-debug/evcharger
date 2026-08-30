@@ -12,39 +12,46 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
   const { getLogoUrl, loaded } = useSiteSettings();
 
   const sizeMap = {
-    sm: { icon: 28, text: 'text-base', gap: 'gap-2' },
-    md: { icon: 36, text: 'text-lg',   gap: 'gap-2.5' },
-    lg: { icon: 56, text: 'text-2xl',  gap: 'gap-3' },
+    sm: { icon: 36, text: 'text-lg', gap: 'gap-2.5' },
+    md: { icon: 52, text: 'text-xl',   gap: 'gap-3' },
+    lg: { icon: 72, text: 'text-3xl',  gap: 'gap-3.5' },
   };
   const s = sizeMap[size];
   const logoUrl = loaded ? getLogoUrl() : 'https://aka.doubaocdn.com/s/OhaBaatK4F';
 
   return (
     <div className={cn('flex items-center', s.gap, className)}>
-      <Image
-        src={logoUrl}
-        alt="youpei auto logo"
-        width={s.icon}
-        height={s.icon}
-        className="shrink-0 object-contain"
-        style={{ width: s.icon, height: s.icon }}
-      />
+      {/* Logo 图标 - 添加白色背景圆角和阴影，更醒目 */}
+      <div 
+        className="shrink-0 rounded-xl bg-white p-1.5 shadow-md ring-1 ring-black/5 flex items-center justify-center"
+        style={{ width: s.icon + 12, height: s.icon + 12 }}
+      >
+        <Image
+          src={logoUrl}
+          alt="youpei auto logo"
+          width={s.icon}
+          height={s.icon}
+          className="object-contain"
+          style={{ width: s.icon, height: s.icon }}
+        />
+      </div>
       {showText && (
         <div className="flex flex-col leading-none">
           <span
-            className={cn('font-bold tracking-tight', s.text)}
+            className={cn('font-extrabold tracking-tight', s.text)}
             style={{
-              background: 'linear-gradient(135deg, #1a73e8 0%, #4285f4 50%, #ff6d00 100%)',
+              background: 'linear-gradient(135deg, #059669 0%, #10b981 40%, #f59e0b 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
             }}
           >
             youpei auto
           </span>
-          {size === 'lg' && (
-            <span className="text-[10px] text-muted-foreground mt-0.5 tracking-widest uppercase">
-              Auto Parts Supplier
+          {size !== 'sm' && (
+            <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase">
+              EV Charging Specialist
             </span>
           )}
         </div>
