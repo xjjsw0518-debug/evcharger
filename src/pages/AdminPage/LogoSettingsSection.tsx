@@ -119,8 +119,11 @@ export default function LogoSettingsSection() {
                 </div>
                 <Button onClick={handleSaveUrl} className="w-full gap-1.5">
                   <ImageIcon className="size-4" />
-                  {lang === 'zh' ? '保存' : 'Save'}
+                  {lang === 'zh' ? '保存并应用到全站' : 'Save & Apply Site-wide'}
                 </Button>
+                <p className="text-xs text-amber-600 text-center">
+                  {lang === 'zh' ? '⚠️ 修改后必须点击保存按钮，才会应用到首页网站' : '⚠️ Must click Save to apply changes to the live site'}
+                </p>
               </TabsContent>
               <TabsContent value="upload" className="space-y-4">
                 <input
@@ -175,8 +178,11 @@ export default function LogoSettingsSection() {
             </div>
             <Button onClick={handleSaveBrand} className="w-full gap-1.5">
               <ImageIcon className="size-4" />
-              {lang === 'zh' ? '保存品牌名称' : 'Save Brand Name'}
+              {lang === 'zh' ? '保存并应用到全站' : 'Save & Apply Site-wide'}
             </Button>
+            <p className="text-xs text-amber-600 text-center">
+              {lang === 'zh' ? '⚠️ 修改后必须点击保存按钮，才会应用到首页网站' : '⚠️ Must click Save to apply changes to the live site'}
+            </p>
           </CardContent>
         </Card>
 
@@ -192,12 +198,12 @@ export default function LogoSettingsSection() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* 模拟导航栏预览 */}
+            {/* 模拟导航栏预览 - 实时显示输入框中的值 */}
             <div className="border border-border/50 rounded-lg overflow-hidden">
               <div className="bg-card border-b border-border/40 px-4 h-16 flex items-center">
                 <div className="flex items-center gap-2.5">
                   <Image
-                    src={settings.logoUrl}
+                    src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
                     alt="Logo preview"
                     width={36}
                     height={36}
@@ -214,27 +220,27 @@ export default function LogoSettingsSection() {
                         backgroundClip: 'text',
                       }}
                     >
-                      {settings.brandName || 'youpei auto'}
+                      {brandNameInput || 'youpei auto'}
                     </span>
-                    {settings.brandSubtitle && (
+                    {brandSubtitleInput && (
                       <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase">
-                        {settings.brandSubtitle}
+                        {brandSubtitleInput}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
               <div className="p-6 bg-muted/30 text-center text-sm text-muted-foreground">
-                {lang === 'zh' ? '导航栏预览' : 'Header preview'}
+                {lang === 'zh' ? '导航栏预览（实时）' : 'Header preview (live)'}
               </div>
             </div>
 
-            {/* 模拟页脚预览 */}
+            {/* 模拟页脚预览 - 实时显示输入框中的值 */}
             <div className="border border-border/50 rounded-lg overflow-hidden">
               <div className="bg-foreground text-background px-4 py-6 flex items-center">
                 <div className="flex items-center gap-2.5">
                   <Image
-                    src={settings.logoUrl}
+                    src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
                     alt="Logo footer preview"
                     width={32}
                     height={32}
@@ -242,17 +248,17 @@ export default function LogoSettingsSection() {
                     style={{ width: 32, height: 32 }}
                   />
                   <div className="flex flex-col leading-none">
-                    <span className="font-bold text-base">{settings.brandName || 'youpei auto'}</span>
-                    {settings.brandSubtitle && (
+                    <span className="font-bold text-base">{brandNameInput || 'youpei auto'}</span>
+                    {brandSubtitleInput && (
                       <span className="text-[10px] text-background/60 tracking-widest uppercase">
-                        {settings.brandSubtitle}
+                        {brandSubtitleInput}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
               <div className="p-3 bg-muted/30 text-center text-xs text-muted-foreground">
-                {lang === 'zh' ? '页脚预览' : 'Footer preview'}
+                {lang === 'zh' ? '页脚预览（实时）' : 'Footer preview (live)'}
               </div>
             </div>
           </CardContent>
