@@ -51,9 +51,9 @@ export default function ContactSettingsSection() {
     return cleaned.trim();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const cleanedEmail = cleanEmail(form.email);
-    updateSettings({
+    const success = await updateSettings({
       whatsapp: form.whatsapp.trim(),
       wechatQrUrl: form.wechatQrUrl.trim(),
       wechatId: form.wechatId.trim(),
@@ -61,19 +61,23 @@ export default function ContactSettingsSection() {
       addressZh: form.addressZh.trim(),
       addressEn: form.addressEn.trim(),
     });
-    // 如果邮箱格式被清洗过，提示用户
-    if (cleanedEmail !== form.email.trim()) {
-      toast.success(lang === 'zh' 
-        ? `联系信息已保存，邮箱已自动清洗为：${cleanedEmail}` 
-        : `Contact settings saved. Email auto-cleaned to: ${cleanedEmail}`);
+    if (success) {
+      // 如果邮箱格式被清洗过，提示用户
+      if (cleanedEmail !== form.email.trim()) {
+        toast.success(lang === 'zh' 
+          ? `✅ 联系信息已保存到服务器！所有电脑同步生效，邮箱已自动清洗为：${cleanedEmail}` 
+          : `✅ Contact settings saved to server! Synced to all devices. Email auto-cleaned to: ${cleanedEmail}`);
+      } else {
+        toast.success(lang === 'zh' ? '✅ 联系信息已保存到服务器！所有电脑同步生效' : '✅ Contact settings saved to server! Synced to all devices');
+      }
     } else {
-      toast.success(lang === 'zh' ? '联系信息已保存' : 'Contact settings saved');
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
     }
   };
 
-  const handleReset = () => {
-    resetSettings();
-    toast.success(lang === 'zh' ? '已恢复默认设置' : 'Reset to defaults');
+  const handleReset = async () => {
+    await resetSettings();
+    toast.success(lang === 'zh' ? '已恢复默认设置，所有电脑同步生效' : 'Reset to defaults, synced to all devices');
   };
 
   if (!loaded) {

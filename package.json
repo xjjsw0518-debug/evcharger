@@ -71,6 +71,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240101.0",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -80,6 +81,7 @@
     "eslint": "^9",
     "postcss": "^8.4.0",
     "typescript": "~5.9",
-    "vite": "^8"
+    "vite": "^8",
+    "wrangler": "^3.0.0"
   }
 }

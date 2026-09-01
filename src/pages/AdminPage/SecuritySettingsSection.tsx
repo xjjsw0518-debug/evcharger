@@ -59,12 +59,16 @@ export default function SecuritySettingsSection() {
     }
     setPwdLoading(true);
     await new Promise(r => setTimeout(r, 500));
-    updateSettings({ adminPassword: newPassword });
+    const success = await updateSettings({ adminPassword: newPassword });
     setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setPwdLoading(false);
-    toast.success('密码修改成功');
+    if (success) {
+      toast.success('✅ 密码修改成功，已同步到服务器，所有电脑生效');
+    } else {
+      toast.error('❌ 保存到服务器失败，请检查网络');
+    }
   };
 
   const handleChangeUsername = async (e: FormEvent) => {
@@ -83,12 +87,16 @@ export default function SecuritySettingsSection() {
     }
     setUsernameLoading(true);
     await new Promise(r => setTimeout(r, 500));
-    updateSettings({ adminUsername: newUsername.trim() });
+    const success = await updateSettings({ adminUsername: newUsername.trim() });
     setAdminLoggedIn(newUsername.trim());
     setNewUsername('');
     setUsernameConfirmPwd('');
     setUsernameLoading(false);
-    toast.success('用户名修改成功');
+    if (success) {
+      toast.success('✅ 用户名修改成功，已同步到服务器，所有电脑生效');
+    } else {
+      toast.error('❌ 保存到服务器失败，请检查网络');
+    }
   };
 
   const handleChangeAdminPath = async (e: FormEvent) => {
@@ -116,14 +124,18 @@ export default function SecuritySettingsSection() {
     }
     setPathLoading(true);
     await new Promise(r => setTimeout(r, 500));
-    updateSettings({ adminPath: cleanPath });
+    const success = await updateSettings({ adminPath: cleanPath });
     setPathLoading(false);
-    toast.success(`后台路径已更新，即将跳转到新地址 /${cleanPath}`);
-    // 必须整页刷新才能让App组件重新读取localStorage中的新路径
-    setTimeout(() => {
-      const loc = window.location;
-      loc.assign(`/${cleanPath}`);
-    }, 1200);
+    if (success) {
+      toast.success(`✅ 后台路径已更新，已同步到服务器，即将跳转到新地址 /${cleanPath}`);
+      // 必须整页刷新才能让App组件重新读取新路径
+      setTimeout(() => {
+        const loc = window.location;
+        loc.assign(`/${cleanPath}`);
+      }, 1200);
+    } else {
+      toast.error('❌ 保存到服务器失败，请检查网络');
+    }
   };
 
   const loginTimeStr = session?.loggedInAt

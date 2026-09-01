@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { SITE_CONFIG } from '@/data/site'
 
 const STORAGE_KEY = '__youpei_site_settings'
+const API_ENDPOINT = '/api/settings'
 
 export interface FooterQuickLink {
   id: string
@@ -74,7 +75,7 @@ const DEFAULT_SOCIALS: FooterSocialItem[] = [
 
 const DEFAULT_SETTINGS: SiteSettings = {
   logoUrl: '',
-  brandName: 'youpei auto',
+  brandName: 'YiLianPu auto',
   brandSubtitle: 'EV Charging Specialist',
   heroBgUrl: 'https://aka.doubaocdn.com/s/1miAfPPz6y',
   heroTitleZh: 'EV 充电配件批发\n中国工厂直供',
@@ -88,7 +89,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   videoCoverUrl: '',
   videoEnabled: true,
   aboutPageEnabled: true,
-  footerCompanyName: 'youpei auto',
+  footerCompanyName: 'YiLianPu auto',
   footerCompanyDescZh: '电动汽车充电配件批发供应商 - 工厂直供，全球发货',
   footerCompanyDescEn: 'Wholesale EV Charging Accessories Supplier - Factory Direct, Global Shipping',
   footerEmail: 'sales@youpei-auto.com',
@@ -98,8 +99,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   footerAddressEn: 'Auto Parts City, Baiyun District, Guangzhou, Guangdong, China',
   footerQuickLinks: DEFAULT_QUICK_LINKS,
   footerSocials: DEFAULT_SOCIALS,
-  footerCopyrightZh: '© {year} youpei auto. 保留所有权利。',
-  footerCopyrightEn: '© {year} youpei auto. All rights reserved.',
+  footerCopyrightZh: '© {year} YiLianPu auto. 保留所有权利。',
+  footerCopyrightEn: '© {year} YiLianPu auto. All rights reserved.',
   footerCtaTitleZh: '获取最新报价',
   footerCtaTitleEn: 'Get Latest Quotes',
   footerCtaDescZh: '发送您的需求，我们将在24小时内为您提供详细报价。',
@@ -109,7 +110,10 @@ const DEFAULT_SETTINGS: SiteSettings = {
   adminPassword: 'XueJian0812511',
 }
 
-function loadSettings(): SiteSettings {
+/**
+ * 从 localStorage 读取缓存设置
+ */
+function loadLocalSettings(): SiteSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
@@ -122,7 +126,10 @@ function loadSettings(): SiteSettings {
   return { ...DEFAULT_SETTINGS }
 }
 
-function saveSettings(settings: SiteSettings): boolean {
+/**
+ * 保存设置到 localStorage 缓存
+ */
+function saveLocalSettings(settings: SiteSettings): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
     return true
@@ -132,31 +139,158 @@ function saveSettings(settings: SiteSettings): boolean {
   }
 }
 
+/**
+ * 从服务器 API 读取最新设置
+ */
+async function fetchSettingsFromServer(): Promise<SiteSettings | null> {
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) {
+      console.error('Failed to fetch settings from server:', response.status)
+      return null
+    }
+    const result = await response.json()
+    if (result.success && result.data) {
+      return { ...DEFAULT_SETTINGS, ...result.data }
+    }
+    return null
+  } catch (e) {
+    console.error('Error fetching settings from server:', e)
+    return null
+  }
+}
+
+/**
+ * 保存设置到服务器 API
+ */
+async function saveSettingsToServer(settings: SiteSettings): Promise<boolean> {
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${settings.adminPassword}`,
+      },
+      body: JSON.stringify(settings),
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      console.error('Failed to save settings to server:', response.status, error)
+      return false
+    }
+    const result = await response.json()
+    return result.success === true
+  } catch (e) {
+    console.error('Error saving settings to server:', e)
+    return false
+  }
+}
+
 export function useSiteSettings() {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS)
   const [loaded, setLoaded] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
+  const isFirstLoad = useRef(true)
 
+  // 组件挂载时：先从 localStorage 读取缓存，然后从服务器拉取最新设置
   useEffect(() => {
-    setSettings(loadSettings())
-    setLoaded(true)
-  }, [])
+    let cancelled = false
 
-  const updateSettings = useCallback((updates: Partial<SiteSettings>): boolean => {
-    let success = false
-    setSettings(prev => {
-      const next = { ...prev, ...updates }
-      success = saveSettings(next)
-      if (success) {
-        return next
+    const init = async () => {
+      // 1. 先从 localStorage 读取缓存，立即显示
+      const localSettings = loadLocalSettings()
+      if (!cancelled) {
+        setSettings(localSettings)
+        setLoaded(true)
       }
-      return prev
-    })
-    return success
+
+      // 2. 从服务器拉取最新设置
+      const serverSettings = await fetchSettingsFromServer()
+      if (!cancelled && serverSettings) {
+        setSettings(serverSettings)
+        // 更新本地缓存
+        saveLocalSettings(serverSettings)
+      }
+    }
+
+    init()
+    return () => { cancelled = true }
   }, [])
 
-  const resetSettings = useCallback(() => {
-    saveSettings(DEFAULT_SETTINGS)
-    setSettings(DEFAULT_SETTINGS)
+  /**
+   * 更新设置：同时保存到服务器和本地缓存
+   * 返回 Promise<boolean>，表示是否保存成功
+   */
+  const updateSettings = useCallback(async (updates: Partial<SiteSettings>): Promise<boolean> => {
+    setSyncing(true)
+    setSyncError(null)
+
+    try {
+      // 先更新本地状态（乐观更新）
+      let newSettings: SiteSettings = DEFAULT_SETTINGS
+      setSettings(prev => {
+        newSettings = { ...prev, ...updates }
+        return newSettings
+      })
+
+      // 保存到本地缓存
+      saveLocalSettings(newSettings)
+
+      // 保存到服务器
+      const serverSuccess = await saveSettingsToServer(newSettings)
+      if (!serverSuccess) {
+        setSyncError('保存到服务器失败，修改仅在本地生效。请检查网络或管理员密码。')
+        return false
+      }
+
+      return true
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      setSyncError(errorMsg)
+      return false
+    } finally {
+      setSyncing(false)
+    }
+  }, [])
+
+  /**
+   * 重置设置为默认值
+   */
+  const resetSettings = useCallback(async () => {
+    setSyncing(true)
+    try {
+      setSettings(DEFAULT_SETTINGS)
+      saveLocalSettings(DEFAULT_SETTINGS)
+      await saveSettingsToServer(DEFAULT_SETTINGS)
+    } finally {
+      setSyncing(false)
+    }
+  }, [])
+
+  /**
+   * 手动从服务器刷新设置
+   */
+  const refreshFromServer = useCallback(async () => {
+    setSyncing(true)
+    try {
+      const serverSettings = await fetchSettingsFromServer()
+      if (serverSettings) {
+        setSettings(serverSettings)
+        saveLocalSettings(serverSettings)
+        setSyncError(null)
+        return true
+      }
+      return false
+    } catch (e) {
+      setSyncError(e instanceof Error ? e.message : String(e))
+      return false
+    } finally {
+      setSyncing(false)
+    }
   }, [])
 
   const getLogoUrl = useCallback(() => {
@@ -188,8 +322,11 @@ export function useSiteSettings() {
   return {
     settings,
     loaded,
-    updateSettings,
-    resetSettings,
+    syncing,        // 是否正在与服务器同步
+    syncError,      // 同步错误信息
+    updateSettings, // 现在是异步函数，返回 Promise<boolean>
+    resetSettings,  // 现在是异步函数
+    refreshFromServer, // 手动从服务器刷新
     getLogoUrl,
     getHeroBgUrl,
     getHeroTitle,

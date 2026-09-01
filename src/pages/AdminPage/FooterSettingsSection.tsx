@@ -71,8 +71,8 @@ export default function FooterSettingsSection() {
     setSocials(settings.footerSocials || []);
   }, [settings.footerQuickLinks?.length, settings.footerSocials?.length]);
 
-  const handleSave = () => {
-    updateSettings({
+  const handleSave = async () => {
+    const success = await updateSettings({
       footerCompanyName: companyName.trim(),
       footerCompanyDescZh: companyDescZh.trim(),
       footerCompanyDescEn: companyDescEn.trim(),
@@ -90,13 +90,17 @@ export default function FooterSettingsSection() {
       footerQuickLinks: quickLinks,
       footerSocials: socials,
     });
-    toast.success(lang === 'zh' ? '页脚设置已保存' : 'Footer settings saved');
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ 页脚设置已保存到服务器！所有电脑同步生效' : '✅ Footer settings saved to server! Synced to all devices');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
+    }
   };
 
-  const handleReset = () => {
-    resetSettings();
+  const handleReset = async () => {
+    await resetSettings();
     setResetOpen(false);
-    toast.success(lang === 'zh' ? '已恢复默认设置' : 'Reset to default');
+    toast.success(lang === 'zh' ? '已恢复默认设置，所有电脑同步生效' : 'Reset to default, synced to all devices');
   };
 
   // --- 快速链接操作 ---

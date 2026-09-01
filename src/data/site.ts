@@ -1,7 +1,7 @@
 // EXPORTS: SITE_CONFIG
 // youpei auto 站点全局配置
 export const SITE_CONFIG = {
-  name: 'youpei auto',
+  name: 'YiLianPu auto',
   nameCn: '优配汽车配件',
   subtitle: 'Wholesale EV Charging Accessories | China Supplier',
   wholesaleBanner: {
@@ -17,8 +17,8 @@ export const SITE_CONFIG = {
     en: 'One-Stop Wholesale Sourcing for EV Charging Accessories',
   },
   description: {
-    zh: 'youpei auto 是专业的电动汽车充电配件批发供应商，专注GBT/Type 2充电枪、转接器、便携式充电桩、V2L放电器等产品，工厂直供，MOQ 2-5件起批，全球发货。',
-    en: 'youpei auto - wholesale EV charging accessories supplier from China. GBT/Type 2 charging guns, adapters, portable chargers, V2L adapters and more. Factory direct wholesale price, MOQ 2-5 pcs, global shipping.'
+    zh: 'YiLianPu auto 是专业的电动汽车充电配件批发供应商，专注GBT/Type 2充电枪、转接器、便携式充电桩、V2L放电器等产品，工厂直供，MOQ 2-5件起批，全球发货。',
+    en: 'YiLianPu auto - wholesale EV charging accessories supplier from China. GBT/Type 2 charging guns, adapters, portable chargers, V2L adapters and more. Factory direct wholesale price, MOQ 2-5 pcs, global shipping.'
   },
   keywords: {
     zh: 'EV充电配件批发,GBT充电枪厂家,电动汽车充电转接器,便携式充电桩批发,V2L放电器,东南亚电动车配件进口商,中国充电配件工厂',
@@ -32,7 +32,7 @@ export const SITE_CONFIG = {
     accent: '#F59E0B',    // 辅色 - 琥珀金
   },
   company: {
-    en: 'Youpei Auto - EV Charging Accessories Co., Ltd.',
+    en: 'YiLianPu Auto - EV Charging Accessories Co., Ltd.',
     zh: '优配电动汽车充电配件有限公司',
   },
   email: 'sales@youpei-auto.com',

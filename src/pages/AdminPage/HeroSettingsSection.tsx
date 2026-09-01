@@ -38,9 +38,13 @@ export default function HeroSettingsSection() {
   const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSaveBg = () => {
-    updateSettings({ heroBgUrl: heroBgUrl.trim() });
-    toast.success(lang === 'zh' ? 'Hero背景图已保存' : 'Hero background saved');
+  const handleSaveBg = async () => {
+    const success = await updateSettings({ heroBgUrl: heroBgUrl.trim() });
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ Hero背景图已保存到服务器！所有电脑同步生效' : '✅ Hero background saved to server! Synced to all devices');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,36 +55,48 @@ export default function HeroSettingsSection() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       const result = ev.target?.result as string;
-      updateSettings({ heroBgUrl: result });
+      const success = await updateSettings({ heroBgUrl: result });
       setHeroBgUrl(result);
-      toast.success(lang === 'zh' ? 'Hero背景图已上传并生效' : 'Hero background uploaded and applied');
+      if (success) {
+        toast.success(lang === 'zh' ? '✅ Hero背景图已上传并保存到服务器！所有电脑同步生效' : '✅ Hero background uploaded and saved to server! Synced to all devices');
+      } else {
+        toast.error(lang === 'zh' ? '⚠️ 保存到服务器失败，但已保存在本地' : '⚠️ Save to server failed, but saved locally');
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSaveText = () => {
-    updateSettings({
+  const handleSaveText = async () => {
+    const success = await updateSettings({
       heroTitleZh: heroTitleZh.trim(),
       heroTitleEn: heroTitleEn.trim(),
       heroSubtitleZh: heroSubtitleZh.trim(),
       heroSubtitleEn: heroSubtitleEn.trim(),
     });
-    toast.success(lang === 'zh' ? 'Hero文字已保存' : 'Hero text saved');
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ Hero文字已保存到服务器！所有电脑同步生效' : '✅ Hero text saved to server! Synced to all devices');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
+    }
   };
 
-  const handleSaveLayout = () => {
-    updateSettings({
+  const handleSaveLayout = async () => {
+    const success = await updateSettings({
       heroAlign,
       heroVerticalOffset,
       heroButtonGap,
     });
-    toast.success(lang === 'zh' ? 'Hero布局已保存' : 'Hero layout saved');
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ Hero布局已保存到服务器！所有电脑同步生效' : '✅ Hero layout saved to server! Synced to all devices');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
+    }
   };
 
-  const handleReset = () => {
-    resetSettings();
+  const handleReset = async () => {
+    await resetSettings();
     setHeroBgUrl('https://aka.doubaocdn.com/s/1miAfPPz6y');
     setHeroTitleZh('EV 充电配件批发\n中国工厂直供');
     setHeroTitleEn('Wholesale EV Charging Accessories\nDirect from China Factory');
@@ -89,7 +105,7 @@ export default function HeroSettingsSection() {
     setHeroAlign('center');
     setHeroVerticalOffset(0);
     setHeroButtonGap(12);
-    toast.success(lang === 'zh' ? '已恢复默认设置' : 'Reset to default');
+    toast.success(lang === 'zh' ? '已恢复默认设置，所有电脑同步生效' : 'Reset to default, synced to all devices');
     setResetOpen(false);
   };
 

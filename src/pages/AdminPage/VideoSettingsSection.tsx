@@ -28,21 +28,25 @@ export default function VideoSettingsSection() {
   const [videoEnabled, setVideoEnabled] = useState(settings.videoEnabled);
   const [resetOpen, setResetOpen] = useState(false);
 
-  const handleSave = () => {
-    updateSettings({
+  const handleSave = async () => {
+    const success = await updateSettings({
       videoUrl: videoUrl.trim(),
       videoCoverUrl: videoCoverUrl.trim(),
       videoEnabled,
     });
-    toast.success(lang === 'zh' ? '视频设置已保存' : 'Video settings saved');
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ 视频设置已保存到服务器！所有电脑同步生效' : '✅ Video settings saved to server! Synced to all devices');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
+    }
   };
 
-  const handleReset = () => {
-    resetSettings();
+  const handleReset = async () => {
+    await resetSettings();
     setVideoUrl('');
     setVideoCoverUrl('');
     setVideoEnabled(true);
-    toast.success(lang === 'zh' ? '已恢复默认设置' : 'Reset to default');
+    toast.success(lang === 'zh' ? '已恢复默认设置，所有电脑同步生效' : 'Reset to default, synced to all devices');
     setResetOpen(false);
   };
 

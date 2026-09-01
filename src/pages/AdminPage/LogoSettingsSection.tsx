@@ -29,28 +29,28 @@ export default function LogoSettingsSection() {
   const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSaveUrl = () => {
+  const handleSaveUrl = async () => {
     if (!urlInput.trim()) {
       toast.error(lang === 'zh' ? '请输入Logo图片URL' : 'Please enter logo URL');
       return;
     }
-    const success = updateSettings({ logoUrl: urlInput.trim() });
+    const success = await updateSettings({ logoUrl: urlInput.trim() });
     if (success) {
-      toast.success(lang === 'zh' ? '✅ Logo已保存！请刷新首页网站查看效果' : '✅ Logo saved! Please refresh the homepage to see changes');
+      toast.success(lang === 'zh' ? '✅ Logo已保存！所有电脑刷新后即可看到效果' : '✅ Logo saved! All devices will see changes after refresh');
     } else {
-      toast.error(lang === 'zh' ? '❌ 保存失败，存储空间不足，请使用更小的图片或图片URL' : '❌ Save failed, storage full. Please use smaller image or URL');
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
     }
   };
 
-  const handleSaveBrand = () => {
-    const success = updateSettings({
-      brandName: brandNameInput.trim() || 'youpei auto',
+  const handleSaveBrand = async () => {
+    const success = await updateSettings({
+      brandName: brandNameInput.trim() || 'YiLianPu auto',
       brandSubtitle: brandSubtitleInput.trim(),
     });
     if (success) {
-      toast.success(lang === 'zh' ? '✅ 品牌名称已保存！请刷新首页网站查看效果' : '✅ Brand name saved! Please refresh the homepage to see changes');
+      toast.success(lang === 'zh' ? '✅ 品牌名称已保存！所有电脑刷新后即可看到效果' : '✅ Brand name saved! All devices will see changes after refresh');
     } else {
-      toast.error(lang === 'zh' ? '❌ 保存失败，请重试' : '❌ Save failed, please try again');
+      toast.error(lang === 'zh' ? '❌ 保存到服务器失败，请检查网络或管理员密码' : '❌ Save to server failed, please check network or admin password');
     }
   };
 
@@ -66,7 +66,7 @@ export default function LogoSettingsSection() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         // 横向 logo：最大宽度 400px，高度按比例（不强制正方形）
         const maxWidth = 400;
         let width = img.width;
@@ -96,11 +96,15 @@ export default function LogoSettingsSection() {
         }
 
         try {
-          updateSettings({ logoUrl: compressedDataUrl });
+          const success = await updateSettings({ logoUrl: compressedDataUrl });
           setUrlInput(compressedDataUrl);
-          toast.success(lang === 'zh' ? 'Logo已上传并压缩保存，全站立即生效' : 'Logo uploaded, compressed and saved');
+          if (success) {
+            toast.success(lang === 'zh' ? '✅ Logo已上传并保存到服务器！所有电脑刷新后即可看到效果' : '✅ Logo uploaded and saved to server! All devices will see changes after refresh');
+          } else {
+            toast.error(lang === 'zh' ? '⚠️ 保存到服务器失败，但已保存在本地。请检查网络或管理员密码' : '⚠️ Save to server failed, but saved locally. Please check network or admin password');
+          }
         } catch (err) {
-          toast.error(lang === 'zh' ? '保存失败，存储空间不足，请使用图片URL' : 'Save failed, storage full. Please use image URL instead');
+          toast.error(lang === 'zh' ? '保存失败，请重试' : 'Save failed, please try again');
         }
       };
       img.onerror = () => {
@@ -117,10 +121,10 @@ export default function LogoSettingsSection() {
     e.target.value = '';
   };
 
-  const handleReset = () => {
-    resetSettings();
+  const handleReset = async () => {
+    await resetSettings();
     setUrlInput('');
-    toast.success(lang === 'zh' ? '已恢复默认设置' : 'Reset to default');
+    toast.success(lang === 'zh' ? '已恢复默认设置，所有电脑同步生效' : 'Reset to default, synced to all devices');
     setResetOpen(false);
   };
 
