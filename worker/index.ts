@@ -107,6 +107,19 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
+      // 调试端点：查看环境变量
+      if (path === '/debug') {
+        return jsonResponse({
+          hasAssets: !!env.ASSETS,
+          assetsType: typeof env.ASSETS,
+          hasAssetsFetch: !!(env.ASSETS && typeof env.ASSETS.fetch === 'function'),
+          hasKV: !!env.SITE_SETTINGS,
+          kvType: typeof env.SITE_SETTINGS,
+          path: path,
+          url: url.toString(),
+        });
+      }
+
       // API 路由
       if (path.startsWith('/api/')) {
         return await handleApiRequest(request, env, path);
@@ -115,7 +128,13 @@ export default {
       // 静态资源（由 Cloudflare Assets 处理）
       if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
         try {
-          return await env.ASSETS.fetch(request);
+          const response = await env.ASSETS.fetch(request);
+          // 如果静态资源返回 404 且不是文件请求，返回 index.html（SPA 支持）
+          if (response.status === 404 && !path.includes('.')) {
+            const indexRequest = new Request(url.origin + '/index.html', request);
+            return await env.ASSETS.fetch(indexRequest);
+          }
+          return response;
         } catch (assetError) {
           console.error('ASSETS fetch error:', assetError);
           // 如果 ASSETS 出错，返回默认 HTML
@@ -126,6 +145,8 @@ export default {
         }
       }
 
+      console.error('ASSETS not available. env keys:', Object.keys(env));
+      
       // 如果没有 ASSETS，返回默认 HTML
       return new Response(DEFAULT_HTML, {
         status: 200,
