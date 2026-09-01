@@ -40,9 +40,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 py-12 md:py-16">
           {/* 品牌信息 */}
           <div className="space-y-4">
-            {/* Logo 容器：足够的内边距确保文字完全在框内 */}
-            <div className="bg-background/10 px-3 py-2.5 rounded-lg inline-block w-auto max-w-full">
-              <Logo size="md" />
+            {/* Logo 容器：使用 sm 尺寸确保在列宽内完整显示，inline-flex 确保宽度计算正确 */}
+            <div className="bg-background/10 px-3 py-2 rounded-lg inline-flex items-center w-auto max-w-full overflow-visible">
+              <Logo size="sm" showText={true} />
             </div>
              <p className="text-sm text-background/70 leading-relaxed max-w-xs">
                {companyDesc || settings.footerCompanyName}
