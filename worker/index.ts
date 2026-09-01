@@ -11,8 +11,8 @@
  */
 
 export interface Env {
-  SITE_SETTINGS: KVNamespace;
-  ASSETS: Fetcher;
+  SITE_SETTINGS?: KVNamespace;
+  ASSETS?: Fetcher;
 }
 
 // 默认网站设置（与前端 useSiteSettings.ts 中的默认设置保持一致）
@@ -84,18 +84,61 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+// 默认 HTML 页面（当 ASSETS 不可用时返回）
+const DEFAULT_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YiLianPu auto - EV Charging Accessories</title>
+</head>
+<body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f5f5f5;">
+  <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <h1 style="color: #333;">YiLianPu auto</h1>
+    <p style="color: #666;">EV Charging Accessories Wholesale</p>
+    <p style="color: #999; font-size: 14px; margin-top: 20px;">Website is loading... Please refresh.</p>
+  </div>
+</body>
+</html>`;
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    const path = url.pathname;
+    try {
+      const url = new URL(request.url);
+      const path = url.pathname;
 
-    // API 路由
-    if (path.startsWith('/api/')) {
-      return handleApiRequest(request, env, path);
+      // API 路由
+      if (path.startsWith('/api/')) {
+        return await handleApiRequest(request, env, path);
+      }
+
+      // 静态资源（由 Cloudflare Assets 处理）
+      if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+        try {
+          return await env.ASSETS.fetch(request);
+        } catch (assetError) {
+          console.error('ASSETS fetch error:', assetError);
+          // 如果 ASSETS 出错，返回默认 HTML
+          return new Response(DEFAULT_HTML, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' },
+          });
+        }
+      }
+
+      // 如果没有 ASSETS，返回默认 HTML
+      return new Response(DEFAULT_HTML, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' },
+      });
+    } catch (error) {
+      console.error('Worker fetch error:', error);
+      // 全局错误处理，避免抛出异常导致 Error 1101
+      return new Response(DEFAULT_HTML, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' },
+      });
     }
-
-    // 静态资源（由 Cloudflare Assets 处理）
-    return env.ASSETS.fetch(request);
   },
 };
 
@@ -111,8 +154,18 @@ async function handleApiRequest(request: Request, env: Env, path: string): Promi
   try {
     // GET /api/settings - 读取网站设置（无需认证）
     if (path === '/api/settings' && request.method === 'GET') {
-      const settings = await env.SITE_SETTINGS.get('site_settings', 'json');
-      return jsonResponse({ success: true, data: settings || DEFAULT_SITE_SETTINGS });
+      let settings = DEFAULT_SITE_SETTINGS;
+      if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.get === 'function') {
+        try {
+          const stored = await env.SITE_SETTINGS.get('site_settings', 'json');
+          if (stored) {
+            settings = { ...DEFAULT_SITE_SETTINGS, ...stored };
+          }
+        } catch (kvError) {
+          console.error('KV get error:', kvError);
+        }
+      }
+      return jsonResponse({ success: true, data: settings });
     }
 
     // POST /api/settings - 保存网站设置（需要管理员认证）
@@ -125,14 +178,35 @@ async function handleApiRequest(request: Request, env: Env, path: string): Promi
       const body = await request.json();
       // 合并默认设置，确保新增字段有默认值
       const mergedSettings = { ...DEFAULT_SITE_SETTINGS, ...body };
-      await env.SITE_SETTINGS.put('site_settings', JSON.stringify(mergedSettings));
+      
+      if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.put === 'function') {
+        try {
+          await env.SITE_SETTINGS.put('site_settings', JSON.stringify(mergedSettings));
+        } catch (kvError) {
+          console.error('KV put error:', kvError);
+          return jsonResponse({ success: false, error: 'Failed to save to KV storage' }, 500);
+        }
+      } else {
+        return jsonResponse({ success: false, error: 'KV storage not configured' }, 500);
+      }
+      
       return jsonResponse({ success: true, message: 'Site settings saved successfully' });
     }
 
     // GET /api/contact-settings - 读取联系信息设置（无需认证）
     if (path === '/api/contact-settings' && request.method === 'GET') {
-      const settings = await env.SITE_SETTINGS.get('contact_settings', 'json');
-      return jsonResponse({ success: true, data: settings || DEFAULT_CONTACT_SETTINGS });
+      let settings = DEFAULT_CONTACT_SETTINGS;
+      if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.get === 'function') {
+        try {
+          const stored = await env.SITE_SETTINGS.get('contact_settings', 'json');
+          if (stored) {
+            settings = { ...DEFAULT_CONTACT_SETTINGS, ...stored };
+          }
+        } catch (kvError) {
+          console.error('KV get error:', kvError);
+        }
+      }
+      return jsonResponse({ success: true, data: settings });
     }
 
     // POST /api/contact-settings - 保存联系信息设置（需要管理员认证）
@@ -145,7 +219,18 @@ async function handleApiRequest(request: Request, env: Env, path: string): Promi
       const body = await request.json();
       // 合并默认设置，确保新增字段有默认值
       const mergedSettings = { ...DEFAULT_CONTACT_SETTINGS, ...body };
-      await env.SITE_SETTINGS.put('contact_settings', JSON.stringify(mergedSettings));
+      
+      if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.put === 'function') {
+        try {
+          await env.SITE_SETTINGS.put('contact_settings', JSON.stringify(mergedSettings));
+        } catch (kvError) {
+          console.error('KV put error:', kvError);
+          return jsonResponse({ success: false, error: 'Failed to save to KV storage' }, 500);
+        }
+      } else {
+        return jsonResponse({ success: false, error: 'KV storage not configured' }, 500);
+      }
+      
       return jsonResponse({ success: true, message: 'Contact settings saved successfully' });
     }
 
@@ -171,8 +256,14 @@ async function verifyAdmin(request: Request, env: Env): Promise<{ success: boole
 
   // 从 KV 中读取当前的管理员密码（即使用户修改了密码也能正确验证）
   try {
-    const settings = await env.SITE_SETTINGS.get('site_settings', 'json') as Record<string, unknown> | null;
-    const adminPassword = (settings?.adminPassword as string) || DEFAULT_SITE_SETTINGS.adminPassword;
+    let adminPassword = DEFAULT_SITE_SETTINGS.adminPassword;
+    
+    if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.get === 'function') {
+      const settings = await env.SITE_SETTINGS.get('site_settings', 'json') as Record<string, unknown> | null;
+      if (settings?.adminPassword) {
+        adminPassword = settings.adminPassword as string;
+      }
+    }
 
     if (token !== adminPassword) {
       return { success: false, error: 'Invalid admin password' };

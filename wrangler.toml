@@ -1,5 +1,5 @@
 name = "evcharger"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-01"
 
 # Workers 后端入口文件（处理 API 路由和静态资源）
 main = "worker/index.ts"
