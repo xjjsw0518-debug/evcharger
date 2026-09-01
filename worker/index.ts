@@ -255,6 +255,56 @@ async function handleApiRequest(request: Request, env: Env, path: string): Promi
       return jsonResponse({ success: true, message: 'Contact settings saved successfully' });
     }
 
+    // 通用内容管理 API
+    // GET /api/content/:type - 读取指定类型的内容（无需认证）
+    // POST /api/content/:type - 保存指定类型的内容（需要管理员认证）
+    const contentMatch = path.match(/^\/api\/content\/([a-z-]+)$/);
+    if (contentMatch) {
+      const contentType = contentMatch[1];
+      const validTypes = ['products', 'categories', 'blog', 'faq', 'about', 'videos'];
+      
+      if (!validTypes.includes(contentType)) {
+        return jsonResponse({ success: false, error: `Invalid content type: ${contentType}. Valid types: ${validTypes.join(', ')}` }, 400);
+      }
+
+      if (request.method === 'GET') {
+        let data: unknown = null;
+        if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.get === 'function') {
+          try {
+            const stored = await env.SITE_SETTINGS.get(`content_${contentType}`, 'json');
+            if (stored) {
+              data = stored;
+            }
+          } catch (kvError) {
+            console.error(`KV get error for content_${contentType}:`, kvError);
+          }
+        }
+        return jsonResponse({ success: true, data: data, type: contentType });
+      }
+
+      if (request.method === 'POST') {
+        const authResult = await verifyAdmin(request, env);
+        if (!authResult.success) {
+          return jsonResponse(authResult, 401);
+        }
+
+        const body = await request.json();
+        
+        if (env.SITE_SETTINGS && typeof env.SITE_SETTINGS.put === 'function') {
+          try {
+            await env.SITE_SETTINGS.put(`content_${contentType}`, JSON.stringify(body));
+          } catch (kvError) {
+            console.error(`KV put error for content_${contentType}:`, kvError);
+            return jsonResponse({ success: false, error: 'Failed to save to KV storage' }, 500);
+          }
+        } else {
+          return jsonResponse({ success: false, error: 'KV storage not configured' }, 500);
+        }
+        
+        return jsonResponse({ success: true, message: `${contentType} saved successfully`, type: contentType });
+      }
+    }
+
     // 404 - API 端点不存在
     return jsonResponse({ success: false, error: 'API endpoint not found' }, 404);
   } catch (error) {

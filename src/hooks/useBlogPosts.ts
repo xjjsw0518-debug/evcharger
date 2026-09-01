@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { MOCK_BLOG_POSTS, type IBlogPost } from '@/data/blog'
+import { useContent } from './useContent'
 
 const STORAGE_KEY = '__auto_parts_blog_posts_v3'
 
@@ -52,7 +53,7 @@ function migratePost(p: unknown, index: number): IBlogPost {
   }
 }
 
-function loadPosts(): IBlogPost[] {
+function loadLocalPosts(): IBlogPost[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
@@ -60,25 +61,16 @@ function loadPosts(): IBlogPost[] {
       if (Array.isArray(parsed)) {
         // 对每篇文章进行数据迁移，确保字段完整
         const migrated = parsed.map((p, i) => migratePost(p, i))
-        // 保存迁移后的数据
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
         return migrated
       }
     }
   } catch (e) {
     console.error('Failed to load posts from localStorage:', e)
   }
-  // 首次：写入 mock 数据，默认全部published
-  const withStatus = getMockPosts()
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
-  } catch (e) {
-    console.error('Failed to save posts to localStorage:', e)
-  }
-  return withStatus
+  return getMockPosts()
 }
 
-function savePosts(posts: IBlogPost[]) {
+function saveLocalPosts(posts: IBlogPost[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
   } catch (e) {
@@ -101,7 +93,10 @@ function checkScheduledPosts(posts: IBlogPost[]): { posts: IBlogPost[]; publishe
 }
 
 export function useBlogPosts() {
-  const [posts, setPosts] = useState<IBlogPost[]>([])
+  // 使用 useContent 从服务器读取和保存博客数据
+  const { data: serverPosts, loaded: serverLoaded, replaceData, syncing, syncError } = useContent<IBlogPost[]>('blog', getMockPosts())
+  
+  const [posts, setPosts] = useState<IBlogPost[]>(loadLocalPosts())
   const [loaded, setLoaded] = useState(false)
   const checkRef = useRef<number | null>(null)
 
@@ -109,28 +104,48 @@ export function useBlogPosts() {
     setPosts(prev => {
       const { posts: next, published } = checkScheduledPosts(prev)
       if (published > 0) {
-        savePosts(next)
+        saveLocalPosts(next)
+        replaceData(next).catch(() => {})
       }
       return next
     })
-  }, [])
+  }, [replaceData])
 
+  // 当服务器数据加载完成后，使用服务器数据
   useEffect(() => {
-    const initial = loadPosts()
-    const { posts: checked } = checkScheduledPosts(initial)
-    if (checked !== initial) savePosts(checked)
-    setPosts(checked)
-    setLoaded(true)
+    if (serverLoaded) {
+      let initialPosts: IBlogPost[]
+      if (serverPosts && Array.isArray(serverPosts) && serverPosts.length > 0) {
+        initialPosts = serverPosts.map((p, i) => migratePost(p, i))
+      } else {
+        // 服务器没有数据，使用本地数据并保存到服务器
+        initialPosts = loadLocalPosts()
+        replaceData(initialPosts).catch(() => {})
+      }
+      
+      const { posts: checked } = checkScheduledPosts(initialPosts)
+      if (checked !== initialPosts) {
+        saveLocalPosts(checked)
+        replaceData(checked).catch(() => {})
+      }
+      setPosts(checked)
+      saveLocalPosts(checked)
+      setLoaded(true)
+    }
+  }, [serverLoaded, serverPosts, replaceData])
 
-    // 每分钟检查一次定时发布
-    checkRef.current = window.setInterval(runScheduledCheck, 60000)
-    return () => {
-      if (checkRef.current !== null) {
-        clearInterval(checkRef.current)
-        checkRef.current = null
+  // 每分钟检查一次定时发布
+  useEffect(() => {
+    if (loaded) {
+      checkRef.current = window.setInterval(runScheduledCheck, 60000)
+      return () => {
+        if (checkRef.current !== null) {
+          clearInterval(checkRef.current)
+          checkRef.current = null
+        }
       }
     }
-  }, [runScheduledCheck])
+  }, [loaded, runScheduledCheck])
 
   const addPost = useCallback((post: Omit<IBlogPost, 'id' | 'createdAt' | 'source' | 'views'> & { id?: string; status?: IBlogPost['status']; scheduledAt?: number }) => {
     setPosts(prev => {
@@ -144,10 +159,11 @@ export function useBlogPosts() {
         createdAt: Date.now(),
       }
       const next = [newPost, ...prev]
-      savePosts(next)
+      saveLocalPosts(next)
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   // 批量导入
   const bulkAddPosts = useCallback((postsData: Omit<IBlogPost, 'id' | 'createdAt' | 'source' | 'views'>[]) => {
@@ -163,41 +179,42 @@ export function useBlogPosts() {
         createdAt: now + i,
       }))
       const next = [...newPosts, ...prev]
-      savePosts(next)
+      saveLocalPosts(next)
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   const updatePost = useCallback((id: string, updates: Partial<IBlogPost>) => {
     setPosts(prev => {
       const next = prev.map(p => p.id === id ? { ...p, ...updates } : p)
-      savePosts(next)
+      saveLocalPosts(next)
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   const deletePost = useCallback((id: string) => {
     setPosts(prev => {
       const next = prev.filter(p => p.id !== id)
-      savePosts(next)
+      saveLocalPosts(next)
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   const resetPosts = useCallback(() => {
     const withStatus = getMockPosts()
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(withStatus))
-    } catch (e) {
-      console.error('Failed to reset posts:', e)
-    }
+    saveLocalPosts(withStatus)
     setPosts(withStatus)
-  }, [])
+    replaceData(withStatus).catch(() => {})
+  }, [replaceData])
 
   const incrementView = useCallback((id: string) => {
     setPosts(prev => {
       const next = prev.map(p => p.id === id ? { ...p, views: (p.views || 0) + 1 } : p)
-      savePosts(next)
+      saveLocalPosts(next)
+      // 浏览量不保存到服务器，避免频繁写入
       return next
     })
   }, [])
@@ -216,5 +233,7 @@ export function useBlogPosts() {
     resetPosts,
     incrementView,
     runScheduledCheck,
+    syncing,
+    syncError,
   }
 }

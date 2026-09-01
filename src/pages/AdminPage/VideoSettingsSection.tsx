@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, Link2, ImageIcon, RotateCcw, Eye, ToggleLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -22,11 +22,22 @@ import { Image } from '@/components/ui/image';
 
 export default function VideoSettingsSection() {
   const { lang } = useLang();
-  const { settings, updateSettings, resetSettings } = useSiteSettings();
+  const { settings, updateSettings, resetSettings, loaded } = useSiteSettings();
   const [videoUrl, setVideoUrl] = useState(settings.videoUrl);
   const [videoCoverUrl, setVideoCoverUrl] = useState(settings.videoCoverUrl);
   const [videoEnabled, setVideoEnabled] = useState(settings.videoEnabled);
   const [resetOpen, setResetOpen] = useState(false);
+  const initializedRef = useRef(false);
+
+  // 当设置从服务器加载完成后，同步输入框的值
+  useEffect(() => {
+    if (loaded && !initializedRef.current) {
+      setVideoUrl(settings.videoUrl);
+      setVideoCoverUrl(settings.videoCoverUrl);
+      setVideoEnabled(settings.videoEnabled);
+      initializedRef.current = true;
+    }
+  }, [loaded, settings]);
 
   const handleSave = async () => {
     const success = await updateSettings({

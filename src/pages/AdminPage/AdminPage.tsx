@@ -82,7 +82,7 @@ export default function AdminPage() {
   const { lang } = useLang();
   const navigate = useNavigate();
   const location = useLocation();
-  const { settings, loaded } = useSiteSettings();
+  const { settings, loaded, syncing, syncError } = useSiteSettings();
   const [activeTab, setActiveTab] = useState<TabKey>('products');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -176,9 +176,30 @@ export default function AdminPage() {
               {lang === 'zh' ? '返回前台' : 'Back to Site'}
             </Button>
           </div>
-          <h1 className="text-base md:text-lg font-semibold text-foreground">
-            {lang === 'zh' ? '管理后台' : 'Admin Dashboard'}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-base md:text-lg font-semibold text-foreground">
+              {lang === 'zh' ? '管理后台' : 'Admin Dashboard'}
+            </h1>
+            {/* 全局同步状态指示器 */}
+            <div className="flex items-center gap-1.5 text-xs">
+              {syncing ? (
+                <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                  <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  {lang === 'zh' ? '同步中...' : 'Syncing...'}
+                </span>
+              ) : syncError ? (
+                <span className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded-full" title={syncError}>
+                  <span className="size-1.5 rounded-full bg-red-500" />
+                  {lang === 'zh' ? '同步失败' : 'Sync Failed'}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                  <span className="size-1.5 rounded-full bg-emerald-500" />
+                  {lang === 'zh' ? '已同步到服务器' : 'Synced to Server'}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline text-xs text-muted-foreground">
               {session?.username || 'Admin'}

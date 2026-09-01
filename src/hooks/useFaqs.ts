@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MOCK_FAQS, type IFaqItem } from '@/data/faq'
+import { useContent } from './useContent'
 
 const STORAGE_KEY = '__auto_parts_faqs'
 
-function loadFaqs(): IFaqItem[] {
+function loadLocalFaqs(): IFaqItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
@@ -13,23 +14,39 @@ function loadFaqs(): IFaqItem[] {
   } catch {
     // 解析失败回退到 mock
   }
-  // 首次：写入 mock 数据
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_FAQS))
   return MOCK_FAQS
 }
 
-function saveFaqs(faqs: IFaqItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(faqs))
+function saveLocalFaqs(faqs: IFaqItem[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(faqs))
+  } catch {
+    // 忽略存储错误
+  }
 }
 
 export function useFaqs() {
-  const [faqs, setFaqs] = useState<IFaqItem[]>([])
+  // 使用 useContent 从服务器读取和保存 FAQ 数据
+  const { data: serverFaqs, loaded: serverLoaded, replaceData, syncing, syncError } = useContent<IFaqItem[]>('faq', MOCK_FAQS)
+  
+  const [faqs, setFaqs] = useState<IFaqItem[]>(loadLocalFaqs())
   const [loaded, setLoaded] = useState(false)
 
+  // 当服务器数据加载完成后，使用服务器数据
   useEffect(() => {
-    setFaqs(loadFaqs())
-    setLoaded(true)
-  }, [])
+    if (serverLoaded) {
+      if (serverFaqs && Array.isArray(serverFaqs) && serverFaqs.length > 0) {
+        setFaqs(serverFaqs)
+        saveLocalFaqs(serverFaqs)
+      } else {
+        // 服务器没有数据，使用本地数据并保存到服务器
+        const localFaqs = loadLocalFaqs()
+        setFaqs(localFaqs)
+        replaceData(localFaqs).catch(() => {})
+      }
+      setLoaded(true)
+    }
+  }, [serverLoaded, serverFaqs, replaceData])
 
   const addFaq = useCallback((faq: Omit<IFaqItem, 'id' | 'createdAt' | 'source'> & { id?: string }) => {
     setFaqs(prev => {
@@ -40,31 +57,48 @@ export function useFaqs() {
         createdAt: Date.now(),
       }
       const next = [...prev, newFaq]
-      saveFaqs(next)
+      saveLocalFaqs(next)
+      // 异步保存到服务器（fire-and-forget）
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   const updateFaq = useCallback((id: string, updates: Partial<IFaqItem>) => {
     setFaqs(prev => {
       const next = prev.map(f => f.id === id ? { ...f, ...updates } : f)
-      saveFaqs(next)
+      saveLocalFaqs(next)
+      // 异步保存到服务器（fire-and-forget）
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   const deleteFaq = useCallback((id: string) => {
     setFaqs(prev => {
       const next = prev.filter(f => f.id !== id)
-      saveFaqs(next)
+      saveLocalFaqs(next)
+      // 异步保存到服务器（fire-and-forget）
+      replaceData(next).catch(() => {})
       return next
     })
-  }, [])
+  }, [replaceData])
 
   const resetFaqs = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_FAQS))
+    saveLocalFaqs(MOCK_FAQS)
     setFaqs(MOCK_FAQS)
-  }, [])
+    // 异步保存到服务器（fire-and-forget）
+    replaceData(MOCK_FAQS).catch(() => {})
+  }, [replaceData])
 
-  return { faqs, loaded, addFaq, updateFaq, deleteFaq, resetFaqs }
+  return { 
+    faqs, 
+    loaded, 
+    addFaq, 
+    updateFaq, 
+    deleteFaq, 
+    resetFaqs,
+    syncing,
+    syncError,
+  }
 }

@@ -42,7 +42,7 @@ const PLATFORM_OPTIONS = [
 
 export default function FooterSettingsSection() {
   const { lang } = useLang();
-  const { settings, updateSettings, resetSettings } = useSiteSettings();
+  const { settings, updateSettings, resetSettings, loaded } = useSiteSettings();
   const { categories } = useCategories();
 
   const [companyName, setCompanyName] = useState(settings.footerCompanyName);
@@ -64,12 +64,30 @@ export default function FooterSettingsSection() {
   const [socials, setSocials] = useState<FooterSocialItem[]>(settings.footerSocials || []);
 
   const [resetOpen, setResetOpen] = useState(false);
+  const initializedRef = useRef(false);
 
-  // 当 localStorage 变化时同步（如标签页切换）
+  // 当设置从服务器加载完成后，同步所有输入框的值
   useEffect(() => {
-    setQuickLinks(settings.footerQuickLinks || []);
-    setSocials(settings.footerSocials || []);
-  }, [settings.footerQuickLinks?.length, settings.footerSocials?.length]);
+    if (loaded && !initializedRef.current) {
+      setCompanyName(settings.footerCompanyName);
+      setCompanyDescZh(settings.footerCompanyDescZh);
+      setCompanyDescEn(settings.footerCompanyDescEn);
+      setFooterEmail(settings.footerEmail);
+      setFooterPhone(settings.footerPhone);
+      setFooterWhatsapp(settings.footerWhatsapp);
+      setFooterAddressZh(settings.footerAddressZh);
+      setFooterAddressEn(settings.footerAddressEn);
+      setCopyrightZh(settings.footerCopyrightZh);
+      setCopyrightEn(settings.footerCopyrightEn);
+      setCtaTitleZh(settings.footerCtaTitleZh);
+      setCtaTitleEn(settings.footerCtaTitleEn);
+      setCtaDescZh(settings.footerCtaDescZh);
+      setCtaDescEn(settings.footerCtaDescEn);
+      setQuickLinks(settings.footerQuickLinks || []);
+      setSocials(settings.footerSocials || []);
+      initializedRef.current = true;
+    }
+  }, [loaded, settings]);
 
   const handleSave = async () => {
     const success = await updateSettings({

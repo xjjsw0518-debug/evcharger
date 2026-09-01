@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Image as ImageIcon, Upload, Link2, RotateCcw, Eye, Type, MoveHorizontal, MoveVertical, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -26,7 +26,7 @@ import { Image } from '@/components/ui/image';
 
 export default function HeroSettingsSection() {
   const { lang } = useLang();
-  const { settings, updateSettings, resetSettings } = useSiteSettings();
+  const { settings, updateSettings, resetSettings, loaded } = useSiteSettings();
   const [heroBgUrl, setHeroBgUrl] = useState(settings.heroBgUrl);
   const [heroTitleZh, setHeroTitleZh] = useState(settings.heroTitleZh);
   const [heroTitleEn, setHeroTitleEn] = useState(settings.heroTitleEn);
@@ -37,6 +37,22 @@ export default function HeroSettingsSection() {
   const [heroButtonGap, setHeroButtonGap] = useState(settings.heroButtonGap);
   const [resetOpen, setResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const initializedRef = useRef(false);
+
+  // 当设置从服务器加载完成后，同步输入框的值
+  useEffect(() => {
+    if (loaded && !initializedRef.current) {
+      setHeroBgUrl(settings.heroBgUrl);
+      setHeroTitleZh(settings.heroTitleZh);
+      setHeroTitleEn(settings.heroTitleEn);
+      setHeroSubtitleZh(settings.heroSubtitleZh);
+      setHeroSubtitleEn(settings.heroSubtitleEn);
+      setHeroAlign(settings.heroAlign);
+      setHeroVerticalOffset(settings.heroVerticalOffset);
+      setHeroButtonGap(settings.heroButtonGap);
+      initializedRef.current = true;
+    }
+  }, [loaded, settings]);
 
   const handleSaveBg = async () => {
     const success = await updateSettings({ heroBgUrl: heroBgUrl.trim() });
