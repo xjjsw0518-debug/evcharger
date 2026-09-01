@@ -256,13 +256,13 @@ export default function LogoSettingsSection() {
             <div className="border border-border/50 rounded-lg overflow-hidden">
               <div className="bg-card border-b border-border/40 px-4 h-24 flex items-center">
                 <div className="flex items-center gap-2.5">
-                  {/* 横向 logo，按照原始比例显示，完全透明无背景，更大更突出 */}
-                  <div className="shrink-0 flex items-center justify-center bg-transparent" style={{ height: 56 }}>
+                  {/* 横向 logo，按照原始比例显示，完全透明无背景，与右侧文字高度对齐 */}
+                  <div className="shrink-0 flex items-center justify-center bg-transparent" style={{ height: 48 }}>
                     <Image
                       src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
                       alt="Logo preview"
                       className="object-contain h-full w-auto bg-transparent border-0 shadow-none rounded-none"
-                      style={{ height: 56, width: 'auto', background: 'transparent' }}
+                      style={{ height: 48, width: 'auto', background: 'transparent' }}
                     />
                   </div>
                   <div className="flex flex-col leading-none">

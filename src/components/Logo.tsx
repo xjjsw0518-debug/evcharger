@@ -11,11 +11,12 @@ interface LogoProps {
 export default function Logo({ size = 'md', showText = true, className }: LogoProps) {
   const { getLogoUrl, loaded, settings } = useSiteSettings();
 
-  // 横向 logo 的高度设置（更大更突出）
+  // 横向 logo 的高度设置（与右侧文字区域高度对齐）
+  // 文字区域高度 = 主标题行高 + 副标题行高 + 间距 ≈ 48px
   const sizeMap = {
-    sm: { height: 40, text: 'text-lg', gap: 'gap-2.5' },
-    md: { height: 56, text: 'text-2xl', gap: 'gap-3' },
-    lg: { height: 72, text: 'text-3xl', gap: 'gap-3.5' },
+    sm: { height: 36, text: 'text-lg', gap: 'gap-2.5' },
+    md: { height: 48, text: 'text-2xl', gap: 'gap-3' },
+    lg: { height: 60, text: 'text-3xl', gap: 'gap-3.5' },
   };
   const s = sizeMap[size];
   const logoUrl = loaded ? getLogoUrl() : 'https://aka.doubaocdn.com/s/OhaBaatK4F';
