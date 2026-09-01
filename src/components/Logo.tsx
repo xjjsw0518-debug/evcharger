@@ -11,11 +11,11 @@ interface LogoProps {
 export default function Logo({ size = 'md', showText = true, className }: LogoProps) {
   const { getLogoUrl, loaded, settings } = useSiteSettings();
 
-  // 横向 logo 的高度设置（不再强制正方形）
+  // 横向 logo 的高度设置（更大更突出）
   const sizeMap = {
-    sm: { height: 32, text: 'text-lg', gap: 'gap-2.5' },
-    md: { height: 44, text: 'text-xl', gap: 'gap-3' },
-    lg: { height: 60, text: 'text-3xl', gap: 'gap-3.5' },
+    sm: { height: 40, text: 'text-lg', gap: 'gap-2.5' },
+    md: { height: 56, text: 'text-2xl', gap: 'gap-3' },
+    lg: { height: 72, text: 'text-3xl', gap: 'gap-3.5' },
   };
   const s = sizeMap[size];
   const logoUrl = loaded ? getLogoUrl() : 'https://aka.doubaocdn.com/s/OhaBaatK4F';
@@ -24,16 +24,16 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
 
   return (
     <div className={cn('flex items-center', s.gap, className)}>
-      {/* Logo 图片 - 按照原始比例显示，不强制正方形 */}
+      {/* Logo 图片 - 按照原始比例显示，完全透明无背景无边框 */}
       <div 
-        className="shrink-0 flex items-center justify-center"
+        className="shrink-0 flex items-center justify-center bg-transparent border-0 shadow-none rounded-none"
         style={{ height: s.height }}
       >
         <Image
           src={logoUrl}
           alt={`${brandName} logo`}
-          className="object-contain h-full w-auto"
-          style={{ height: s.height, width: 'auto' }}
+          className="object-contain h-full w-auto bg-transparent border-0 shadow-none rounded-none"
+          style={{ height: s.height, width: 'auto', background: 'transparent' }}
         />
       </div>
       {showText && (
