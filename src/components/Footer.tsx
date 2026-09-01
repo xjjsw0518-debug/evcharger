@@ -26,8 +26,9 @@ export default function Footer() {
   const ctaTitle = lang === 'zh' ? settings.footerCtaTitleZh : settings.footerCtaTitleEn;
   const ctaDesc = lang === 'zh' ? settings.footerCtaDescZh : settings.footerCtaDescEn;
   const footerAddress = lang === 'zh' ? settings.footerAddressZh : settings.footerAddressEn;
-  // 优先用联系信息设置，兜底用页脚设置
-  const email = contactSettings.email || settings.footerEmail;
+  // 邮箱读取逻辑：页脚设置优先（用户更倾向于在页脚设置中修改），联系信息设置兜底
+  // 这样用户无论在哪个设置中修改邮箱，都能生效
+  const email = settings.footerEmail || contactSettings.email;
   const whatsapp = contactSettings.whatsapp || settings.footerWhatsapp;
   const address = contactLoaded
     ? (lang === 'zh' ? contactSettings.addressZh : contactSettings.addressEn) || footerAddress

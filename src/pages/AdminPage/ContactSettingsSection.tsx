@@ -39,16 +39,36 @@ export default function ContactSettingsSection() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  // 清洗邮箱格式：去掉 mailto:、https://、http:// 等前缀，只保留纯邮箱地址
+  const cleanEmail = (email: string): string => {
+    let cleaned = email.trim();
+    // 去掉 https:// 或 http:// 前缀
+    cleaned = cleaned.replace(/^https?:\/\//i, '');
+    // 去掉 mailto: 前缀
+    cleaned = cleaned.replace(/^mailto:/i, '');
+    // 去掉末尾的斜杠
+    cleaned = cleaned.replace(/\/+$/, '');
+    return cleaned.trim();
+  };
+
   const handleSave = () => {
+    const cleanedEmail = cleanEmail(form.email);
     updateSettings({
       whatsapp: form.whatsapp.trim(),
       wechatQrUrl: form.wechatQrUrl.trim(),
       wechatId: form.wechatId.trim(),
-      email: form.email.trim(),
+      email: cleanedEmail,
       addressZh: form.addressZh.trim(),
       addressEn: form.addressEn.trim(),
     });
-    toast.success(lang === 'zh' ? '联系信息已保存' : 'Contact settings saved');
+    // 如果邮箱格式被清洗过，提示用户
+    if (cleanedEmail !== form.email.trim()) {
+      toast.success(lang === 'zh' 
+        ? `联系信息已保存，邮箱已自动清洗为：${cleanedEmail}` 
+        : `Contact settings saved. Email auto-cleaned to: ${cleanedEmail}`);
+    } else {
+      toast.success(lang === 'zh' ? '联系信息已保存' : 'Contact settings saved');
+    }
   };
 
   const handleReset = () => {
@@ -154,6 +174,11 @@ export default function ContactSettingsSection() {
                 onChange={e => handleChange('email', e.target.value)}
                 placeholder="sales@youpei-auto.com"
               />
+              <p className="text-xs text-muted-foreground">
+                {lang === 'zh' 
+                  ? '请输入纯邮箱地址，如 sales@youpei-auto.com，无需添加 mailto: 或 https:// 前缀，系统会自动清洗。注意：页脚设置中的邮箱会优先显示。' 
+                  : 'Enter pure email address like sales@youpei-auto.com, no mailto: or https:// prefix needed, system will auto-clean. Note: Footer settings email takes priority.'}
+              </p>
             </div>
 
             {/* 公司地址 - 中文 */}
