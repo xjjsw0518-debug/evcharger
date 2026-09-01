@@ -53,6 +53,10 @@ export default function App() {
       <LanguageProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>
+            {/* Admin routes - 放在最前面，确保优先匹配 */}
+            <Route path="/XUEJIAN-manage/login" element={<AdminLoginPage />} />
+            <Route path="/XUEJIAN-manage" element={<AdminPage />} />
+
             <Route element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="products/:category?" element={<ProductListPage />} />
@@ -63,10 +67,6 @@ export default function App() {
               <Route path="faq" element={<FaqPage />} />
               <Route path="contact" element={<ContactPage />} />
             </Route>
-
-            {/* Admin routes - outside Layout, have their own chrome */}
-            <Route path={`${ADMIN_PATH}/login`} element={<AdminLoginPage />} />
-            <Route path={ADMIN_PATH} element={<AdminPage />} />
 
             {/* Old /admin path redirects to home */}
             <Route path="admin/*" element={<Navigate to="/" replace />} />
