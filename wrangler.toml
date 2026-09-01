@@ -13,3 +13,4 @@ id = "7d8d0796e5624fc697b60324cff96e83"
 # 静态资源配置（前端构建产物）
 [assets]
 directory = "./dist"
+binding = "ASSETS"
