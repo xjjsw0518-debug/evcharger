@@ -40,7 +40,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 py-12 md:py-16">
           {/* 品牌信息 */}
           <div className="space-y-4">
-            <div className="bg-background/10 -mx-1 px-1 py-1 rounded-lg inline-block">
+            {/* Logo 容器：足够的内边距确保文字完全在框内 */}
+            <div className="bg-background/10 px-3 py-2.5 rounded-lg inline-block w-auto max-w-full">
               <Logo size="md" />
             </div>
              <p className="text-sm text-background/70 leading-relaxed max-w-xs">
