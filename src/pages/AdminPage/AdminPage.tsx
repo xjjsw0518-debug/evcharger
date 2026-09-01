@@ -91,13 +91,12 @@ export default function AdminPage() {
   useEffect(() => {
     if (!loaded) return;
     if (!isAdminLoggedIn()) {
-      // Redirect to login page (same path, handled at app route level by showing login)
-      // We use a state flag to show login inline or navigate
-      navigate(`/${settings.adminPath}/login`, { replace: true });
+      // Redirect to login page
+      navigate(`/XUEJIAN-manage/login`, { replace: true });
     } else {
       setCheckingAuth(false);
     }
-  }, [loaded, navigate, settings.adminPath]);
+  }, [loaded, navigate]);
 
   useEffect(() => {
     document.title = 'Admin Panel - youpei auto';
@@ -109,18 +108,8 @@ export default function AdminPage() {
   const handleLogout = () => {
     clearAdminSession();
     toast.success('已退出登录');
-    navigate(`/${settings.adminPath}/login`, { replace: true });
+    navigate(`/XUEJIAN-manage/login`, { replace: true });
   };
-
-  // When admin path changes (from security settings), redirect to new path
-  useEffect(() => {
-    if (!loaded || checkingAuth) return;
-    const expectedPath = `/${settings.adminPath}`;
-    const currentBasePath = location.pathname.split('/').slice(0, 2).join('/');
-    if (currentBasePath !== expectedPath && currentBasePath !== '') {
-      navigate(expectedPath, { replace: true });
-    }
-  }, [settings.adminPath, loaded, checkingAuth, location.pathname, navigate]);
 
   const handleTabClick = (key: TabKey) => {
     setActiveTab(key);

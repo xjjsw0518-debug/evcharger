@@ -101,41 +101,8 @@ export default function SecuritySettingsSection() {
 
   const handleChangeAdminPath = async (e: FormEvent) => {
     e.preventDefault();
-    if (!newAdminPath.trim() || !pathConfirmPwd) {
-      toast.error('请填写所有字段');
-      return;
-    }
-    if (pathConfirmPwd !== settings.adminPassword) {
-      toast.error('密码不正确');
-      return;
-    }
-    const cleanPath = newAdminPath.trim().replace(/^\/+/, '').replace(/\/+$/, '');
-    if (!/^[a-zA-Z0-9_-]+$/.test(cleanPath)) {
-      toast.error('路径只能包含字母、数字、横线和下划线');
-      return;
-    }
-    if (cleanPath.length < 3) {
-      toast.error('路径长度至少3个字符');
-      return;
-    }
-    if (cleanPath === settings.adminPath) {
-      toast.error('新路径与当前路径相同');
-      return;
-    }
-    setPathLoading(true);
-    await new Promise(r => setTimeout(r, 500));
-    const success = await updateSettings({ adminPath: cleanPath });
-    setPathLoading(false);
-    if (success) {
-      toast.success(`✅ 后台路径已更新，已同步到服务器，即将跳转到新地址 /${cleanPath}`);
-      // 必须整页刷新才能让App组件重新读取新路径
-      setTimeout(() => {
-        const loc = window.location;
-        loc.assign(`/${cleanPath}`);
-      }, 1200);
-    } else {
-      toast.error('❌ 保存到服务器失败，请检查网络');
-    }
+    // 后台路径暂时固定为 XUEJIAN-manage，避免动态路由导致访问问题
+    toast.info('ℹ️ 后台管理路径已固定为 /XUEJIAN-manage，暂不支持修改。如需修改请联系技术支持。');
   };
 
   const loginTimeStr = session?.loggedInAt

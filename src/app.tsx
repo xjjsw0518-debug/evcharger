@@ -31,9 +31,11 @@ const PageLoader = () => (
 
 
 
+// 固定的后台管理路径（避免动态路由导致重定向问题）
+const ADMIN_PATH = 'XUEJIAN-manage';
+
 export default function App() {
-  const { settings, loaded } = useSiteSettings();
-  const adminPath = settings.adminPath || 'XUEJIAN-manage';
+  const { loaded } = useSiteSettings();
 
   if (!loaded) {
     return (
@@ -63,8 +65,8 @@ export default function App() {
             </Route>
 
             {/* Admin routes - outside Layout, have their own chrome */}
-            <Route path={`${adminPath}/login`} element={<AdminLoginPage />} />
-            <Route path={adminPath} element={<AdminPage />} />
+            <Route path={`${ADMIN_PATH}/login`} element={<AdminLoginPage />} />
+            <Route path={ADMIN_PATH} element={<AdminPage />} />
 
             {/* Old /admin path redirects to home */}
             <Route path="admin/*" element={<Navigate to="/" replace />} />

@@ -147,7 +147,7 @@ export default function AdminLoginPage() {
       clearLockState();
       setLockInfo({ attempts: 0, lockedUntil: null });
       setAdminLoggedIn(username.trim());
-      navigate(`/${settings.adminPath}`, { replace: true });
+      navigate(`/XUEJIAN-manage`, { replace: true });
     } else {
       const newAttempts = lockInfo.attempts + 1;
       let lockedUntil: number | null = null;
