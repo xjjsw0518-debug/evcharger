@@ -2,7 +2,7 @@ name = "evcharger"
 compatibility_date = "2024-01-01"
 
 # Workers 后端入口文件（处理 API 路由和静态资源）
-main = "src/worker/index.ts"
+main = "worker/index.ts"
 
 # KV 命名空间绑定 - 存储网站设置（服务器端，所有人共享）
 # 部署前请先在 Cloudflare 后台创建 KV 命名空间，然后替换下面的 id
