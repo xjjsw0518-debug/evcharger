@@ -122,8 +122,14 @@ function loadSettings(): SiteSettings {
   return { ...DEFAULT_SETTINGS }
 }
 
-function saveSettings(settings: SiteSettings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+function saveSettings(settings: SiteSettings): boolean {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    return true
+  } catch (e) {
+    console.error('Failed to save settings to localStorage:', e)
+    return false
+  }
 }
 
 export function useSiteSettings() {
@@ -135,12 +141,17 @@ export function useSiteSettings() {
     setLoaded(true)
   }, [])
 
-  const updateSettings = useCallback((updates: Partial<SiteSettings>) => {
+  const updateSettings = useCallback((updates: Partial<SiteSettings>): boolean => {
+    let success = false
     setSettings(prev => {
       const next = { ...prev, ...updates }
-      saveSettings(next)
-      return next
+      success = saveSettings(next)
+      if (success) {
+        return next
+      }
+      return prev
     })
+    return success
   }, [])
 
   const resetSettings = useCallback(() => {

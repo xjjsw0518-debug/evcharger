@@ -34,16 +34,24 @@ export default function LogoSettingsSection() {
       toast.error(lang === 'zh' ? '请输入Logo图片URL' : 'Please enter logo URL');
       return;
     }
-    updateSettings({ logoUrl: urlInput.trim() });
-    toast.success(lang === 'zh' ? 'Logo已保存，全站立即生效' : 'Logo saved, applied site-wide');
+    const success = updateSettings({ logoUrl: urlInput.trim() });
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ Logo已保存！请刷新首页网站查看效果' : '✅ Logo saved! Please refresh the homepage to see changes');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存失败，存储空间不足，请使用更小的图片或图片URL' : '❌ Save failed, storage full. Please use smaller image or URL');
+    }
   };
 
   const handleSaveBrand = () => {
-    updateSettings({
+    const success = updateSettings({
       brandName: brandNameInput.trim() || 'youpei auto',
       brandSubtitle: brandSubtitleInput.trim(),
     });
-    toast.success(lang === 'zh' ? '品牌名称已保存，全站立即生效' : 'Brand name saved, applied site-wide');
+    if (success) {
+      toast.success(lang === 'zh' ? '✅ 品牌名称已保存！请刷新首页网站查看效果' : '✅ Brand name saved! Please refresh the homepage to see changes');
+    } else {
+      toast.error(lang === 'zh' ? '❌ 保存失败，请重试' : '❌ Save failed, please try again');
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,14 +61,65 @@ export default function LogoSettingsSection() {
       toast.error(lang === 'zh' ? '请选择图片文件' : 'Please select an image file');
       return;
     }
+
+    // 压缩图片，避免 base64 过大导致 localStorage 存储失败
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const result = ev.target?.result as string;
-      updateSettings({ logoUrl: result });
-      setUrlInput(result);
-      toast.success(lang === 'zh' ? 'Logo已上传并生效' : 'Logo uploaded and applied');
+      const img = new Image();
+      img.onload = () => {
+        // 最大尺寸 200x200，保持比例
+        const maxSize = 200;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          toast.error(lang === 'zh' ? '图片处理失败' : 'Image processing failed');
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // 转换为 JPEG，质量 0.85，减小体积
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        // 检查 base64 大小（localStorage 限制约 5MB）
+        if (compressedDataUrl.length > 4 * 1024 * 1024) {
+          toast.error(lang === 'zh' ? '图片过大，请使用更小的图片或图片URL' : 'Image too large, please use a smaller image or URL');
+          return;
+        }
+
+        try {
+          updateSettings({ logoUrl: compressedDataUrl });
+          setUrlInput(compressedDataUrl);
+          toast.success(lang === 'zh' ? 'Logo已上传并压缩保存，全站立即生效' : 'Logo uploaded, compressed and saved');
+        } catch (err) {
+          toast.error(lang === 'zh' ? '保存失败，存储空间不足，请使用图片URL' : 'Save failed, storage full. Please use image URL instead');
+        }
+      };
+      img.onerror = () => {
+        toast.error(lang === 'zh' ? '图片加载失败' : 'Failed to load image');
+      };
+      img.src = ev.target?.result as string;
+    };
+    reader.onerror = () => {
+      toast.error(lang === 'zh' ? '图片读取失败' : 'Failed to read image');
     };
     reader.readAsDataURL(file);
+
+    // 重置 input，允许重复上传同一文件
+    e.target.value = '';
   };
 
   const handleReset = () => {
