@@ -32,7 +32,7 @@ const PageLoader = () => (
 
 
 // 固定的后台管理路径（避免动态路由导致重定向问题）
-const ADMIN_PATH = 'XUEJIAN-manage';
+const ADMIN_PATH = '/XUEJIAN-manage';
 
 export default function App() {
   const { loaded } = useSiteSettings();
