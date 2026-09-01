@@ -67,18 +67,13 @@ export default function LogoSettingsSection() {
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
-        // 最大尺寸 200x200，保持比例
-        const maxSize = 200;
+        // 横向 logo：最大宽度 400px，高度按比例（不强制正方形）
+        const maxWidth = 400;
         let width = img.width;
         let height = img.height;
-        if (width > maxSize || height > maxSize) {
-          if (width > height) {
-            height = Math.round((height * maxSize) / width);
-            width = maxSize;
-          } else {
-            width = Math.round((width * maxSize) / height);
-            height = maxSize;
-          }
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
         }
 
         const canvas = document.createElement('canvas');
@@ -259,16 +254,17 @@ export default function LogoSettingsSection() {
           <CardContent className="space-y-6">
             {/* 模拟导航栏预览 - 实时显示输入框中的值 */}
             <div className="border border-border/50 rounded-lg overflow-hidden">
-              <div className="bg-card border-b border-border/40 px-4 h-16 flex items-center">
+              <div className="bg-card border-b border-border/40 px-4 h-20 flex items-center">
                 <div className="flex items-center gap-2.5">
-                  <Image
-                    src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
-                    alt="Logo preview"
-                    width={36}
-                    height={36}
-                    className="shrink-0 object-contain"
-                    style={{ width: 36, height: 36 }}
-                  />
+                  {/* 横向 logo，按照原始比例显示 */}
+                  <div className="shrink-0 flex items-center justify-center" style={{ height: 44 }}>
+                    <Image
+                      src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
+                      alt="Logo preview"
+                      className="object-contain h-full w-auto"
+                      style={{ height: 44, width: 'auto' }}
+                    />
+                  </div>
                   <div className="flex flex-col leading-none">
                     <span
                       className="font-extrabold text-lg tracking-tight"
@@ -298,14 +294,15 @@ export default function LogoSettingsSection() {
             <div className="border border-border/50 rounded-lg overflow-hidden">
               <div className="bg-foreground text-background px-4 py-6 flex items-center">
                 <div className="flex items-center gap-2.5">
-                  <Image
-                    src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
-                    alt="Logo footer preview"
-                    width={32}
-                    height={32}
-                    className="shrink-0 object-contain"
-                    style={{ width: 32, height: 32 }}
-                  />
+                  {/* 横向 logo，按照原始比例显示 */}
+                  <div className="shrink-0 flex items-center justify-center" style={{ height: 36 }}>
+                    <Image
+                      src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
+                      alt="Logo footer preview"
+                      className="object-contain h-full w-auto"
+                      style={{ height: 36, width: 'auto' }}
+                    />
+                  </div>
                   <div className="flex flex-col leading-none">
                     <span className="font-bold text-base">{brandNameInput || 'youpei auto'}</span>
                     {brandSubtitleInput && (
