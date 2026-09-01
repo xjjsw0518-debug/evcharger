@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { Image } from '@/components/ui/image';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface LogoProps {
@@ -15,8 +14,8 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
   // 文字区域高度 = 主标题行高 + 副标题行高 + 间距 ≈ 48px
   const sizeMap = {
     sm: { height: 36, text: 'text-lg', gap: 'gap-2.5' },
-    md: { height: 48, text: 'text-2xl', gap: 'gap-3' },
-    lg: { height: 60, text: 'text-3xl', gap: 'gap-3.5' },
+    md: { height: 48, text: 'text-xl', gap: 'gap-3' },
+    lg: { height: 60, text: 'text-2xl', gap: 'gap-3.5' },
   };
   const s = sizeMap[size];
   const logoUrl = loaded ? getLogoUrl() : 'https://aka.doubaocdn.com/s/OhaBaatK4F';
@@ -25,22 +24,30 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
 
   return (
     <div className={cn('flex items-center', s.gap, className)}>
-      {/* Logo 图片 - 按照原始比例显示，完全透明无背景无边框 */}
+      {/* Logo 图片 - 使用原生 img 确保完全透明无背景，按照原始比例显示 */}
       <div 
-        className="shrink-0 flex items-center justify-center bg-transparent border-0 shadow-none rounded-none"
-        style={{ height: s.height }}
+        className="shrink-0 flex items-center justify-center"
+        style={{ height: s.height, background: 'transparent' }}
       >
-        <Image
+        <img
           src={logoUrl}
           alt={`${brandName} logo`}
-          className="object-contain h-full w-auto bg-transparent border-0 shadow-none rounded-none"
-          style={{ height: s.height, width: 'auto', background: 'transparent' }}
+          className="object-contain h-full w-auto"
+          style={{ 
+            height: s.height, 
+            width: 'auto', 
+            background: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+            borderRadius: 0,
+          }}
         />
       </div>
       {showText && (
         <div className="flex flex-col leading-none">
+          {/* 主标题：whitespace-nowrap 防止换行，文字稍小确保一行显示 */}
           <span
-            className={cn('font-extrabold tracking-tight', s.text)}
+            className={cn('font-extrabold tracking-tight whitespace-nowrap', s.text)}
             style={{
               background: 'linear-gradient(135deg, #059669 0%, #10b981 40%, #f59e0b 100%)',
               WebkitBackgroundClip: 'text',
@@ -52,7 +59,7 @@ export default function Logo({ size = 'md', showText = true, className }: LogoPr
             {brandName}
           </span>
           {size !== 'sm' && brandSubtitle && (
-            <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase">
+            <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase whitespace-nowrap">
               {brandSubtitle}
             </span>
           )}
