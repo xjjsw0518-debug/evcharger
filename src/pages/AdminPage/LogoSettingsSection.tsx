@@ -98,8 +98,8 @@ export default function LogoSettingsSection() {
         image.src = dataUrl;
       });
 
-      // 3. 压缩图片（最大宽度 320px）
-      const maxWidth = 320;
+      // 3. 压缩图片（最大宽度 240px，确保 base64 不会太大）
+      const maxWidth = 240;
       let width = img.width;
       let height = img.height;
       if (width > maxWidth) {
@@ -116,7 +116,11 @@ export default function LogoSettingsSection() {
       }
 
       const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-      if (!isPng) {
+
+      // 先尝试 PNG 格式（保留透明背景）
+      if (isPng) {
+        ctx.clearRect(0, 0, width, height);
+      } else {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
       }
@@ -127,22 +131,28 @@ export default function LogoSettingsSection() {
         ? canvas.toDataURL('image/png')
         : canvas.toDataURL('image/jpeg', 0.9);
 
-      // 5. 如果超过 1MB，进一步压缩为 JPEG
-      if (compressedDataUrl.length > 1 * 1024 * 1024) {
-        const smallCanvas = document.createElement('canvas');
-        smallCanvas.width = Math.max(1, Math.round(width * 0.75));
-        smallCanvas.height = Math.max(1, Math.round(height * 0.75));
-        const smallCtx = smallCanvas.getContext('2d');
-        if (smallCtx) {
-          smallCtx.fillStyle = '#ffffff';
-          smallCtx.fillRect(0, 0, smallCanvas.width, smallCanvas.height);
-          smallCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
-          compressedDataUrl = smallCanvas.toDataURL('image/jpeg', 0.85);
-        }
+      // 5. 如果 PNG 超过 500KB，自动转换为 JPEG（白色背景，确保体积小）
+      if (isPng && compressedDataUrl.length > 500 * 1024) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
       }
 
-      // 6. 最终检查
-      if (compressedDataUrl.length > 2 * 1024 * 1024) {
+      // 6. 如果还是超过 1MB，进一步缩小尺寸
+      if (compressedDataUrl.length > 1 * 1024 * 1024) {
+        const smallWidth = Math.max(1, Math.round(width * 0.7));
+        const smallHeight = Math.max(1, Math.round(height * 0.7));
+        canvas.width = smallWidth;
+        canvas.height = smallHeight;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, smallWidth, smallHeight);
+        ctx.drawImage(img, 0, 0, smallWidth, smallHeight);
+        compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      }
+
+      // 7. 最终检查（不超过 1.5MB）
+      if (compressedDataUrl.length > 1.5 * 1024 * 1024) {
         throw new Error('Compressed image still too large');
       }
 
