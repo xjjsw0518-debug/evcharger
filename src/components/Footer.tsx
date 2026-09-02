@@ -45,8 +45,14 @@ export default function Footer() {
             <div className="flex items-center w-auto max-w-full">
               <Logo size="sm" showText={true} />
             </div>
+            {/* 公司名称：单独显示，作为品牌信息区的标题 */}
+            {settings.footerCompanyName && (
+              <h3 className="text-base font-semibold text-background">
+                {settings.footerCompanyName}
+              </h3>
+            )}
              <p className="text-sm text-background/70 leading-relaxed max-w-xs">
-               {companyDesc || settings.footerCompanyName}
+               {companyDesc}
              </p>
              <div className="inline-block bg-primary/20 text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full border border-primary/30">
                Wholesale EV Charging Accessories Supplier
