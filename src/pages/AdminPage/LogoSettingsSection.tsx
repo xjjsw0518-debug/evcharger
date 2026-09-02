@@ -176,6 +176,7 @@ export default function LogoSettingsSection() {
           toast.error(lang === 'zh' ? '图片处理失败，请重试或使用图片URL' : 'Image processing failed, please try again or use image URL', { id: 'logo-upload' });
         } finally {
           setUploading(false);
+          toast.dismiss('logo-upload');
         }
       };
       img.onerror = () => {
