@@ -101,18 +101,16 @@ export function useContent<T>(contentType: string, defaultValue: T) {
     setSyncError(null);
 
     try {
+      // 直接计算新数据，不依赖 setData 回调（React 的 setState 回调不会立即执行）
       let newData: T;
-      setData(prev => {
-        if (typeof updates === 'function') {
-          newData = (updates as (prev: T) => T)(prev);
-        } else {
-          newData = { ...prev, ...updates };
-        }
-        return newData;
-      });
+      if (typeof updates === 'function') {
+        newData = (updates as (prev: T) => T)(data);
+      } else {
+        newData = { ...data, ...updates };
+      }
 
-      // 等待状态更新（简单延迟）
-      await new Promise(r => setTimeout(r, 50));
+      // 立即更新本地状态
+      setData(newData);
 
       const serverSuccess = await saveToServer(newData);
       if (!serverSuccess) {
@@ -128,7 +126,7 @@ export function useContent<T>(contentType: string, defaultValue: T) {
     } finally {
       setSyncing(false);
     }
-  }, [saveToServer]);
+  }, [data, saveToServer]);
 
   // 替换全部内容
   const replaceData = useCallback(async (newData: T): Promise<boolean> => {
@@ -136,8 +134,8 @@ export function useContent<T>(contentType: string, defaultValue: T) {
     setSyncError(null);
 
     try {
+      // 立即更新本地状态
       setData(newData);
-      await new Promise(r => setTimeout(r, 50));
 
       const serverSuccess = await saveToServer(newData);
       if (!serverSuccess) {

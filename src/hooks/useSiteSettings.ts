@@ -230,12 +230,11 @@ export function useSiteSettings() {
     setSyncError(null)
 
     try {
-      // 先更新本地状态（乐观更新）
-      let newSettings: SiteSettings = DEFAULT_SETTINGS
-      setSettings(prev => {
-        newSettings = { ...prev, ...updates }
-        return newSettings
-      })
+      // 直接计算新设置，不依赖 setSettings 回调（React 的 setState 回调不会立即执行）
+      const newSettings: SiteSettings = { ...settings, ...updates }
+
+      // 立即更新本地状态
+      setSettings(newSettings)
 
       // 保存到本地缓存
       saveLocalSettings(newSettings)
@@ -255,7 +254,7 @@ export function useSiteSettings() {
     } finally {
       setSyncing(false)
     }
-  }, [])
+  }, [settings])
 
   /**
    * 重置设置为默认值
