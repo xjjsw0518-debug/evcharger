@@ -66,130 +66,101 @@ export default function LogoSettingsSection() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       toast.error(lang === 'zh' ? '请选择图片文件' : 'Please select an image file');
       return;
     }
-
-    // 检查原始文件大小（不超过 5MB）
     if (file.size > 5 * 1024 * 1024) {
       toast.error(lang === 'zh' ? '图片文件过大（超过5MB），请先压缩或使用图片URL' : 'Image too large (>5MB), please compress or use image URL');
       return;
     }
 
     setUploading(true);
-    toast.loading(lang === 'zh' ? '正在处理图片...' : 'Processing image...', { id: 'logo-upload' });
+    const toastId = toast.loading(lang === 'zh' ? '正在处理图片...' : 'Processing image...');
 
-    // 压缩图片，支持 PNG 透明背景
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = async () => {
-        try {
-          // 横向 logo：最大宽度 320px，高度按比例（不强制正方形）
-          const maxWidth = 320;
-          let width = img.width;
-          let height = img.height;
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
+    try {
+      // 1. 读取文件为 base64
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
 
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            toast.error(lang === 'zh' ? '图片处理失败，请重试' : 'Image processing failed, please try again');
-            setUploading(false);
-            toast.dismiss('logo-upload');
-            return;
-          }
+      // 2. 加载图片
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Failed to load image'));
+        image.src = dataUrl;
+      });
 
-          // 检查是否为 PNG（支持透明背景），如果是 PNG 则保持透明
-          const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-          
-          if (!isPng) {
-            // 非 PNG 图片，填充白色背景
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, width, height);
-          }
-          
-          ctx.drawImage(img, 0, 0, width, height);
+      // 3. 压缩图片（最大宽度 320px）
+      const maxWidth = 320;
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
 
-          // 根据图片类型选择输出格式
-          // PNG 保留透明背景但体积较大，JPEG 体积小但不支持透明
-          // 策略：如果原图是 PNG 且有透明区域，输出 PNG；否则输出 JPEG
-          let compressedDataUrl: string;
-          if (isPng) {
-            compressedDataUrl = canvas.toDataURL('image/png');
-          } else {
-            compressedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Canvas context not available');
+      }
 
-          // 检查 base64 大小（KV 存储建议不超过 1MB，超过则进一步压缩）
-          if (compressedDataUrl.length > 1 * 1024 * 1024) {
-            // 进一步压缩：减小宽度到 240px，使用 JPEG 格式
-            const smallMaxWidth = 240;
-            let smallWidth = img.width;
-            let smallHeight = img.height;
-            if (smallWidth > smallMaxWidth) {
-              smallHeight = Math.round((smallHeight * smallMaxWidth) / smallWidth);
-              smallWidth = smallMaxWidth;
-            }
-            const smallCanvas = document.createElement('canvas');
-            smallCanvas.width = smallWidth;
-            smallCanvas.height = smallHeight;
-            const smallCtx = smallCanvas.getContext('2d');
-            if (smallCtx) {
-              smallCtx.fillStyle = '#ffffff';
-              smallCtx.fillRect(0, 0, smallWidth, smallHeight);
-              smallCtx.drawImage(img, 0, 0, smallWidth, smallHeight);
-              compressedDataUrl = smallCanvas.toDataURL('image/jpeg', 0.85);
-            }
-          }
+      const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+      if (!isPng) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+      }
+      ctx.drawImage(img, 0, 0, width, height);
 
-          // 最终检查（不超过 2MB）
-          if (compressedDataUrl.length > 2 * 1024 * 1024) {
-            toast.error(lang === 'zh' ? '图片压缩后仍然过大，请使用更小的图片或图片URL' : 'Compressed image still too large, please use a smaller image or URL');
-            setUploading(false);
-            toast.dismiss('logo-upload');
-            return;
-          }
+      // 4. 转换为 base64
+      let compressedDataUrl = isPng
+        ? canvas.toDataURL('image/png')
+        : canvas.toDataURL('image/jpeg', 0.9);
 
-          try {
-            const success = await updateSettings({ logoUrl: compressedDataUrl });
-            setUrlInput(compressedDataUrl);
-            if (success) {
-              toast.success(lang === 'zh' ? '✅ Logo已上传并保存！所有电脑刷新后即可看到效果' : '✅ Logo uploaded and saved! All devices will see changes after refresh', { id: 'logo-upload' });
-            } else {
-              toast.error(lang === 'zh' ? '⚠️ 保存到服务器失败，但已保存在本地。请检查网络或管理员密码' : '⚠️ Save to server failed, but saved locally. Please check network or admin password', { id: 'logo-upload' });
-            }
-          } catch (err) {
-            toast.error(lang === 'zh' ? '保存失败，请重试' : 'Save failed, please try again', { id: 'logo-upload' });
-          }
-        } catch (err) {
-          console.error('Image processing error:', err);
-          toast.error(lang === 'zh' ? '图片处理失败，请重试或使用图片URL' : 'Image processing failed, please try again or use image URL', { id: 'logo-upload' });
-        } finally {
-          setUploading(false);
-          toast.dismiss('logo-upload');
+      // 5. 如果超过 1MB，进一步压缩为 JPEG
+      if (compressedDataUrl.length > 1 * 1024 * 1024) {
+        const smallCanvas = document.createElement('canvas');
+        smallCanvas.width = Math.max(1, Math.round(width * 0.75));
+        smallCanvas.height = Math.max(1, Math.round(height * 0.75));
+        const smallCtx = smallCanvas.getContext('2d');
+        if (smallCtx) {
+          smallCtx.fillStyle = '#ffffff';
+          smallCtx.fillRect(0, 0, smallCanvas.width, smallCanvas.height);
+          smallCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
+          compressedDataUrl = smallCanvas.toDataURL('image/jpeg', 0.85);
         }
-      };
-      img.onerror = () => {
-        toast.error(lang === 'zh' ? '图片加载失败，请检查文件格式' : 'Failed to load image, please check file format', { id: 'logo-upload' });
-        setUploading(false);
-      };
-      img.src = ev.target?.result as string;
-    };
-    reader.onerror = () => {
-      toast.error(lang === 'zh' ? '图片读取失败，请重试' : 'Failed to read image, please try again', { id: 'logo-upload' });
+      }
+
+      // 6. 最终检查
+      if (compressedDataUrl.length > 2 * 1024 * 1024) {
+        throw new Error('Compressed image still too large');
+      }
+
+      // 7. 保存到服务器
+      const success = await updateSettings({ logoUrl: compressedDataUrl });
+      setUrlInput(compressedDataUrl);
+
+      if (success) {
+        toast.success(lang === 'zh' ? '✅ Logo已上传并保存！所有电脑刷新后即可看到效果' : '✅ Logo uploaded and saved! All devices will see changes after refresh', { id: toastId });
+      } else {
+        toast.error(lang === 'zh' ? '⚠️ 保存到服务器失败，但已保存在本地。请检查网络或管理员密码' : '⚠️ Save to server failed, but saved locally. Please check network or admin password', { id: toastId });
+      }
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      toast.error(lang === 'zh' ? '图片处理失败，请重试或使用图片URL' : 'Image processing failed, please try again or use image URL', { id: toastId });
+    } finally {
       setUploading(false);
-    };
-    reader.readAsDataURL(file);
+    }
 
     // 重置 input，允许重复上传同一文件
     e.target.value = '';
