@@ -27,6 +27,7 @@ export default function LogoSettingsSection() {
   const [brandNameInput, setBrandNameInput] = useState(settings.brandName);
   const [brandSubtitleInput, setBrandSubtitleInput] = useState(settings.brandSubtitle);
   const [resetOpen, setResetOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initializedRef = useRef(false);
 
@@ -73,58 +74,119 @@ export default function LogoSettingsSection() {
       return;
     }
 
-    // 压缩图片，避免 base64 过大导致 localStorage 存储失败
+    // 检查原始文件大小（不超过 5MB）
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(lang === 'zh' ? '图片文件过大（超过5MB），请先压缩或使用图片URL' : 'Image too large (>5MB), please compress or use image URL');
+      return;
+    }
+
+    setUploading(true);
+    toast.loading(lang === 'zh' ? '正在处理图片...' : 'Processing image...', { id: 'logo-upload' });
+
+    // 压缩图片，支持 PNG 透明背景
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = async () => {
-        // 横向 logo：最大宽度 400px，高度按比例（不强制正方形）
-        const maxWidth = 400;
-        let width = img.width;
-        let height = img.height;
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          toast.error(lang === 'zh' ? '图片处理失败' : 'Image processing failed');
-          return;
-        }
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // 转换为 JPEG，质量 0.85，减小体积
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-        // 检查 base64 大小（localStorage 限制约 5MB）
-        if (compressedDataUrl.length > 4 * 1024 * 1024) {
-          toast.error(lang === 'zh' ? '图片过大，请使用更小的图片或图片URL' : 'Image too large, please use a smaller image or URL');
-          return;
-        }
-
         try {
-          const success = await updateSettings({ logoUrl: compressedDataUrl });
-          setUrlInput(compressedDataUrl);
-          if (success) {
-            toast.success(lang === 'zh' ? '✅ Logo已上传并保存到服务器！所有电脑刷新后即可看到效果' : '✅ Logo uploaded and saved to server! All devices will see changes after refresh');
+          // 横向 logo：最大宽度 320px，高度按比例（不强制正方形）
+          const maxWidth = 320;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            toast.error(lang === 'zh' ? '图片处理失败，请重试' : 'Image processing failed, please try again');
+            setUploading(false);
+            toast.dismiss('logo-upload');
+            return;
+          }
+
+          // 检查是否为 PNG（支持透明背景），如果是 PNG 则保持透明
+          const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+          
+          if (!isPng) {
+            // 非 PNG 图片，填充白色背景
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+          }
+          
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 根据图片类型选择输出格式
+          // PNG 保留透明背景但体积较大，JPEG 体积小但不支持透明
+          // 策略：如果原图是 PNG 且有透明区域，输出 PNG；否则输出 JPEG
+          let compressedDataUrl: string;
+          if (isPng) {
+            compressedDataUrl = canvas.toDataURL('image/png');
           } else {
-            toast.error(lang === 'zh' ? '⚠️ 保存到服务器失败，但已保存在本地。请检查网络或管理员密码' : '⚠️ Save to server failed, but saved locally. Please check network or admin password');
+            compressedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          }
+
+          // 检查 base64 大小（KV 存储建议不超过 1MB，超过则进一步压缩）
+          if (compressedDataUrl.length > 1 * 1024 * 1024) {
+            // 进一步压缩：减小宽度到 240px，使用 JPEG 格式
+            const smallMaxWidth = 240;
+            let smallWidth = img.width;
+            let smallHeight = img.height;
+            if (smallWidth > smallMaxWidth) {
+              smallHeight = Math.round((smallHeight * smallMaxWidth) / smallWidth);
+              smallWidth = smallMaxWidth;
+            }
+            const smallCanvas = document.createElement('canvas');
+            smallCanvas.width = smallWidth;
+            smallCanvas.height = smallHeight;
+            const smallCtx = smallCanvas.getContext('2d');
+            if (smallCtx) {
+              smallCtx.fillStyle = '#ffffff';
+              smallCtx.fillRect(0, 0, smallWidth, smallHeight);
+              smallCtx.drawImage(img, 0, 0, smallWidth, smallHeight);
+              compressedDataUrl = smallCanvas.toDataURL('image/jpeg', 0.85);
+            }
+          }
+
+          // 最终检查（不超过 2MB）
+          if (compressedDataUrl.length > 2 * 1024 * 1024) {
+            toast.error(lang === 'zh' ? '图片压缩后仍然过大，请使用更小的图片或图片URL' : 'Compressed image still too large, please use a smaller image or URL');
+            setUploading(false);
+            toast.dismiss('logo-upload');
+            return;
+          }
+
+          try {
+            const success = await updateSettings({ logoUrl: compressedDataUrl });
+            setUrlInput(compressedDataUrl);
+            if (success) {
+              toast.success(lang === 'zh' ? '✅ Logo已上传并保存！所有电脑刷新后即可看到效果' : '✅ Logo uploaded and saved! All devices will see changes after refresh', { id: 'logo-upload' });
+            } else {
+              toast.error(lang === 'zh' ? '⚠️ 保存到服务器失败，但已保存在本地。请检查网络或管理员密码' : '⚠️ Save to server failed, but saved locally. Please check network or admin password', { id: 'logo-upload' });
+            }
+          } catch (err) {
+            toast.error(lang === 'zh' ? '保存失败，请重试' : 'Save failed, please try again', { id: 'logo-upload' });
           }
         } catch (err) {
-          toast.error(lang === 'zh' ? '保存失败，请重试' : 'Save failed, please try again');
+          console.error('Image processing error:', err);
+          toast.error(lang === 'zh' ? '图片处理失败，请重试或使用图片URL' : 'Image processing failed, please try again or use image URL', { id: 'logo-upload' });
+        } finally {
+          setUploading(false);
         }
       };
       img.onerror = () => {
-        toast.error(lang === 'zh' ? '图片加载失败' : 'Failed to load image');
+        toast.error(lang === 'zh' ? '图片加载失败，请检查文件格式' : 'Failed to load image, please check file format', { id: 'logo-upload' });
+        setUploading(false);
       };
       img.src = ev.target?.result as string;
     };
     reader.onerror = () => {
-      toast.error(lang === 'zh' ? '图片读取失败' : 'Failed to read image');
+      toast.error(lang === 'zh' ? '图片读取失败，请重试' : 'Failed to read image, please try again', { id: 'logo-upload' });
+      setUploading(false);
     };
     reader.readAsDataURL(file);
 
@@ -198,23 +260,43 @@ export default function LogoSettingsSection() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
                 <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
                   className="w-full h-24 border-dashed flex-col gap-2"
                 >
-                  <Upload className="size-6 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {lang === 'zh' ? '点击或拖拽图片到此处上传' : 'Click to upload or drag & drop'}
-                  </span>
+                  {uploading ? (
+                    <>
+                      <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-muted-foreground">
+                        {lang === 'zh' ? '正在处理图片...' : 'Processing image...'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="size-6 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {lang === 'zh' ? '点击选择图片上传（支持PNG透明背景）' : 'Click to upload (PNG with transparency supported)'}
+                      </span>
+                    </>
+                  )}
                 </Button>
-                <p className="text-xs text-muted-foreground">
-                  {lang === 'zh' ? '图片将转换为base64存储在本地，适合小尺寸Logo' : 'Images are stored as base64 locally, suitable for small logos'}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    {lang === 'zh' ? '• 支持 PNG / JPG / WebP 格式，PNG 保留透明背景' : '• PNG / JPG / WebP supported, PNG preserves transparency'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {lang === 'zh' ? '• 建议横向 logo，尺寸约 320x100 像素' : '• Recommended horizontal logo, ~320x100px'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {lang === 'zh' ? '• 原始文件不超过 5MB，自动压缩优化' : '• Max 5MB original, auto-compressed'}
+                  </p>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -269,31 +351,32 @@ export default function LogoSettingsSection() {
           <CardContent className="space-y-6">
             {/* 模拟导航栏预览 - 实时显示输入框中的值 */}
             <div className="border border-border/50 rounded-lg overflow-hidden">
-              <div className="bg-card border-b border-border/40 px-4 h-24 flex items-center">
+              <div className="bg-card border-b border-border/40 px-4 h-20 flex items-center">
                 <div className="flex items-center gap-2.5">
                   {/* 横向 logo，按照原始比例显示，完全透明无背景，与右侧文字高度对齐 */}
-                  <div className="shrink-0 flex items-center justify-center" style={{ height: 48, background: 'transparent' }}>
+                  <div className="shrink-0 flex items-center justify-center" style={{ height: 44, background: 'transparent' }}>
                     <img
                       src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
                       alt="Logo preview"
-                      className="object-contain h-full w-auto"
-                      style={{ height: 48, width: 'auto', background: 'transparent', border: 'none', boxShadow: 'none' }}
+                      className="object-contain h-full w-auto max-w-none"
+                      style={{ height: 44, width: 'auto', background: 'transparent', border: 'none', boxShadow: 'none', display: 'block' }}
                     />
                   </div>
-                  <div className="flex flex-col leading-none">
+                  <div className="flex flex-col leading-none justify-center">
                     <span
-                      className="font-extrabold text-lg tracking-tight"
+                      className="font-extrabold text-lg tracking-tight whitespace-nowrap"
                       style={{
                         background: 'linear-gradient(135deg, #059669 0%, #10b981 40%, #f59e0b 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
+                        lineHeight: 1.2,
                       }}
                     >
-                      {brandNameInput || 'youpei auto'}
+                      {brandNameInput || 'YiLianPu auto'}
                     </span>
                     {brandSubtitleInput && (
-                      <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase">
+                      <span className="text-[10px] text-emerald-600 font-semibold mt-1 tracking-wider uppercase whitespace-nowrap" style={{ lineHeight: 1.2 }}>
                         {brandSubtitleInput}
                       </span>
                     )}
@@ -307,21 +390,21 @@ export default function LogoSettingsSection() {
 
             {/* 模拟页脚预览 - 实时显示输入框中的值 */}
             <div className="border border-border/50 rounded-lg overflow-hidden">
-              <div className="bg-foreground text-background px-4 py-6 flex items-center">
-                <div className="flex items-center gap-2.5">
+              <div className="bg-foreground text-background px-4 py-5 flex items-center">
+                <div className="flex items-center gap-2">
                   {/* 横向 logo，按照原始比例显示，完全透明无背景 */}
-                  <div className="shrink-0 flex items-center justify-center" style={{ height: 36, background: 'transparent' }}>
+                  <div className="shrink-0 flex items-center justify-center" style={{ height: 32, background: 'transparent' }}>
                     <img
                       src={urlInput || 'https://aka.doubaocdn.com/s/OhaBaatK4F'}
                       alt="Logo footer preview"
-                      className="object-contain h-full w-auto"
-                      style={{ height: 36, width: 'auto', background: 'transparent', border: 'none', boxShadow: 'none' }}
+                      className="object-contain h-full w-auto max-w-none"
+                      style={{ height: 32, width: 'auto', background: 'transparent', border: 'none', boxShadow: 'none', display: 'block' }}
                     />
                   </div>
-                  <div className="flex flex-col leading-none">
-                    <span className="font-bold text-base">{brandNameInput || 'youpei auto'}</span>
+                  <div className="flex flex-col leading-none justify-center">
+                    <span className="font-bold text-base whitespace-nowrap" style={{ lineHeight: 1.2 }}>{brandNameInput || 'YiLianPu auto'}</span>
                     {brandSubtitleInput && (
-                      <span className="text-[10px] text-background/60 tracking-widest uppercase">
+                      <span className="text-[9px] text-background/60 tracking-widest uppercase whitespace-nowrap mt-0.5" style={{ lineHeight: 1.2 }}>
                         {brandSubtitleInput}
                       </span>
                     )}
