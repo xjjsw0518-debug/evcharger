@@ -129,8 +129,14 @@ export default {
       if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
         try {
           const response = await env.ASSETS.fetch(request);
-          // 如果静态资源返回 404 且不是文件请求，返回 index.html（SPA 支持）
-          if (response.status === 404 && !path.includes('.')) {
+          
+          // SPA 路由回退：如果 Assets 返回 404 或 307 重定向到首页，且不是文件请求，返回 index.html
+          const isRedirectToRoot = response.status === 307 && 
+            (response.headers.get('Location') === '/' || response.headers.get('Location') === '');
+          const isNotFound = response.status === 404;
+          const isFileRequest = path.includes('.');
+          
+          if ((isNotFound || isRedirectToRoot) && !isFileRequest) {
             const indexRequest = new Request(url.origin + '/index.html', request);
             return await env.ASSETS.fetch(indexRequest);
           }

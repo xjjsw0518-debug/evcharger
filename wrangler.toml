@@ -14,3 +14,5 @@ id = "7d8d0796e5624fc697b60324cff96e83"
 [assets]
 directory = "./dist"
 binding = "ASSETS"
+# SPA 模式：不存在的路径返回 index.html，由前端路由处理
+not_found_handling = "single-page-application"
