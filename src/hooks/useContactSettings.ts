@@ -21,12 +21,12 @@ export interface ContactSettings {
 }
 
 const DEFAULT_SETTINGS: ContactSettings = {
-  whatsapp: SITE_CONFIG.whatsapp,
-  wechatQrUrl: SITE_CONFIG.wechatQrUrl,
-  wechatId: MOCK_COMPANY.contact.wechat,
-  email: SITE_CONFIG.email,
-  addressZh: MOCK_COMPANY.contact.address.zh,
-  addressEn: MOCK_COMPANY.contact.address.en,
+  whatsapp: '+8613371170795',
+  wechatQrUrl: 'https://picsum.photos/seed/wechat-qr-code/300/300',
+  wechatId: 'YiLianPu_Auto',
+  email: 'sales@evlinkpro.com',
+  addressZh: '中国广东省广州市白云区汽配城',
+  addressEn: 'Auto Parts City, Baiyun District, Guangzhou, Guangdong, China',
 };
 
 /**

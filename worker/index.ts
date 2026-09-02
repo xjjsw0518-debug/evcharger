@@ -35,9 +35,9 @@ const DEFAULT_SITE_SETTINGS = {
   footerCompanyName: 'YiLianPu auto',
   footerCompanyDescZh: '电动汽车充电配件批发供应商 - 工厂直供，全球发货',
   footerCompanyDescEn: 'Wholesale EV Charging Accessories Supplier - Factory Direct, Global Shipping',
-  footerEmail: 'sales@youpei-auto.com',
+  footerEmail: 'sales@evlinkpro.com',
   footerPhone: '+86-138-0000-0000',
-  footerWhatsapp: '+86-138-0000-0000',
+  footerWhatsapp: '+8613371170795',
   footerAddressZh: '中国广东省广州市白云区汽配城',
   footerAddressEn: 'Auto Parts City, Baiyun District, Guangzhou, Guangdong, China',
   footerQuickLinks: [
@@ -68,10 +68,10 @@ const DEFAULT_SITE_SETTINGS = {
 
 // 默认联系信息设置（与前端 useContactSettings.ts 中的默认设置保持一致）
 const DEFAULT_CONTACT_SETTINGS = {
-  whatsapp: '+86-138-0000-0000',
+  whatsapp: '+8613371170795',
   wechatQrUrl: 'https://picsum.photos/seed/wechat-qr-code/300/300',
-  wechatId: 'youpei_auto',
-  email: 'sales@youpei-auto.com',
+  wechatId: 'YiLianPu_Auto',
+  email: 'sales@evlinkpro.com',
   addressZh: '中国广东省广州市白云区汽配城',
   addressEn: 'Auto Parts City, Baiyun District, Guangzhou, Guangdong, China',
 };
